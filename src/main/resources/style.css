@@ -1,3 +1,5 @@
 .background {
-    -fx-background-color: #212121;
+    -fx-background-image: url("images/map.png");
+    -fx-background-size: 1920px 1080px;
+    -fx-background-repeat: no-repeat;
 }
