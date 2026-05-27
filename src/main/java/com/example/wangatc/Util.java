@@ -15,6 +15,25 @@ public class Util { // use static variables & methods -> enables access in other
     // load plane icons
     private static Image arrivingPlaneImage = new Image(Util.class.getResourceAsStream("/images/planeArriving.png"));
 
+    public static double getHeadingTo(double[] p1, double[] p2) {
+        double x1 = p1[0];
+        double y1 = p1[1];
+
+        double x2 = p2[0];
+        double y2 = p2[1];
+
+        // calculate x & y components of displacement vector
+        double deltaX = x2 - x1;
+        double deltaY = y2 - y1;
+
+        // return angle (direction plane must travel in relative to map)
+        double heading = Math.toDegrees(Math.atan2(deltaY, deltaX));
+
+        // normalize angle to between 0-359 (initially between -180 & 180)
+        heading = (heading + 360) % 360;
+
+        return heading;
+    }
 
     public static int[] generateRandomSpawnPoint() { // generate random spawn point for arriving aircraft beyond one of four screen edges
         int whichEdge = (int) (Math.random() * (4 - 1 + 1)) + 1; // random 1-4
@@ -55,7 +74,7 @@ public class Util { // use static variables & methods -> enables access in other
         imageNode.setY(-32);
 
         // create larger invisible circle around image -> larger click hitbox
-        Circle clickTarget = new Circle(0, 0, 20);
+        Circle clickTarget = new Circle(0, 0, 40);
         clickTarget.setFill(Color.color(0, 0, 0, 0.01)); // use 0.01 opacity -> completely transparent cannot register clicks
 
         // combine into group container

@@ -10,13 +10,10 @@ public class ArrivingPlane extends Plane {
         this.setY(spawnPosition[1]);
 
         // point plane towards center of screen
+        double[] p1 = {this.getX(), this.getY()};
+        double[] p2 = {(double) Util.screenWidth / 2, (double) Util.screenHeight / 2};
 
-        // calculate x and y components of direct line to center
-        double deltaX = ((double) Util.screenWidth / 2) - this.getX();
-        double deltaY = ((double) Util.screenHeight / 2) - this.getY();
-
-        // calculate angle of flight path to center (direction plane must travel in relative to map)
-        double initialHeading = Math.toDegrees(Math.atan2(deltaY, deltaX));
+        double initialHeading = Util.getHeadingTo(p1, p2);
 
         this.setCurrentHeading(initialHeading);
         this.setTargetHeading(initialHeading);

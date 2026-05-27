@@ -11,8 +11,8 @@ public class Game {
 
     private ArrayList<Plane> allActivePlanes;
     private ArrayList<Plane> allAirbornePlanes; // does not include planes in motion on the runway
-    private ArrayList<Plane> arrivingPlanes;
-    private ArrayList<Plane> departingPlanes;
+    private ArrayList<ArrivingPlane> arrivingPlanes;
+    private ArrayList<DepartingPlane> departingPlanes;
 
     private ArrayList<Plane> takeoffQueue; // includes all planes that must be placed on a runway
     private int maxTakeoffQueueSize;
@@ -61,15 +61,10 @@ public class Game {
                 headingIndicator.setEndX(e.getX());
                 headingIndicator.setEndY(e.getY());
 
-                // calculate displacement components from center of plane to mouse endpoint
-                double deltaX = e.getX() - selectedPlane.getX();
-                double deltaY = e.getY() - selectedPlane.getY();
-
-                // calculate angle between plane & mouse
-                double targetAngle = Math.toDegrees(Math.atan2(deltaY, deltaX));
-
-                // normalize angle to between 0-359
-                targetAngle = (targetAngle + 360) % 360;
+                // calculate angle between center of plane & mouse endpoint
+                double[] p1 = {selectedPlane.getX(), selectedPlane.getY()};
+                double[] p2 = {e.getX(), e.getY()};
+                double targetAngle = Util.getHeadingTo(p1, p2);
 
                 // set target heading to angle
                 selectedPlane.setTargetHeading(targetAngle);

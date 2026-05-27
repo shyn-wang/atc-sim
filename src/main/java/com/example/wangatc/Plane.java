@@ -107,7 +107,7 @@ public class Plane {
                 if (diff > 0) {
                     this.currentHeading += turnRate; // positive -> clockwise
                 } else {
-                    this.currentHeading -= turnRate; // negative -> negative
+                    this.currentHeading -= turnRate; // negative -> counter-clockwise
                 }
             }
 
@@ -119,7 +119,7 @@ public class Plane {
         // move plane
         double radians = Math.toRadians(this.currentHeading);
 
-        // move based on resultant velocity components
+        // move based on resultant velocity components -> always fly in direction of currentHeading
         this.x += this.speed * Math.cos(radians);
         this.y += this.speed * Math.sin(radians);
 

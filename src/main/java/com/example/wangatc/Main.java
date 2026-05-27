@@ -65,7 +65,6 @@ public class Main extends Application {
     }
 
     private void startGameLoop() {
-        // 60 fps
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
             public void handle(long currentNanoTime) {
