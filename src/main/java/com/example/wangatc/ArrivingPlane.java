@@ -21,7 +21,7 @@ public class ArrivingPlane extends Plane {
         this.setCurrentHeading(initialHeading);
         this.setTargetHeading(initialHeading);
 
-        // assign image
+        // assign image & hitbox
         this.setSprite(Util.getArrivingPlaneSprite());
 
         // set sprite properties

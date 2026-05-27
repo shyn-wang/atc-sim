@@ -1,7 +1,11 @@
 package com.example.wangatc;
 
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class Util { // use static variables & methods -> enables access in other classes without creating a util object
     public static int screenWidth = 1920;
@@ -39,16 +43,23 @@ public class Util { // use static variables & methods -> enables access in other
         return new int[] {spawnX, spawnY};
     }
 
-    public static ImageView getArrivingPlaneSprite() {
-        ImageView sprite = new ImageView(arrivingPlaneImage); // wrap in ImageView -> enables javafx to render
+    public static Node getArrivingPlaneSprite() {
+        ImageView imageNode = new ImageView(arrivingPlaneImage); // wrap in ImageView -> enables javafx to render
 
-        sprite.setFitWidth(64);
-        sprite.setFitHeight(64);
-        sprite.setPreserveRatio(true);
+        imageNode.setFitWidth(64);
+        imageNode.setFitHeight(64);
+        imageNode.setPreserveRatio(true);
 
         // set origin of sprite to center -> enables rotation around central point
-        sprite.setX(-32);
-        sprite.setY(-32);
+        imageNode.setX(-32);
+        imageNode.setY(-32);
+
+        // create larger invisible circle around image -> larger click hitbox
+        Circle clickTarget = new Circle(0, 0, 20);
+        clickTarget.setFill(Color.color(0, 0, 0, 0.01)); // use 0.01 opacity -> completely transparent cannot register clicks
+
+        // combine into group container
+        Group sprite = new Group(imageNode, clickTarget);
 
         return sprite;
     }

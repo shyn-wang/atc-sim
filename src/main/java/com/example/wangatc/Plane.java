@@ -1,6 +1,6 @@
 package com.example.wangatc;
 
-import javafx.scene.image.ImageView;
+import javafx.scene.Node;
 
 public class Plane {
     private double x;
@@ -13,17 +13,14 @@ public class Plane {
 
     private double speed;
 
-    private boolean mouseSelected;
-
-    private ImageView sprite;
+    private Node sprite;
 
     public Plane(String state, double x, double y) {
         this.state = state;
         this.x = x;
         this.y = y;
 
-        speed = 0.5;
-        mouseSelected = false;
+        speed = 0.35;
 
         // initialize headings to 0
         this.currentHeading = 0.0;
@@ -76,11 +73,11 @@ public class Plane {
     }
 
 
-    public ImageView getSprite() {
+    public Node getSprite() {
         return sprite;
     }
 
-    public void setSprite(ImageView sprite) {
+    public void setSprite(Node sprite) {
         this.sprite = sprite;
     }
 
@@ -89,7 +86,7 @@ public class Plane {
 
     public void move() {
         if (this.currentHeading != this.targetHeading) { // gradually turn plane towards target direction
-            double turnRate = 1.5; // turn rate per frame
+            double turnRate = 0.2; // turn rate per frame
 
             // find smallest angle between current heading & target heading (which direction to turn in) -> normalization
             double diff = this.targetHeading - this.currentHeading;
