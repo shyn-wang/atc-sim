@@ -11,6 +11,7 @@ public class Util { // use static variables & methods -> enables access in other
     // load plane icons
     private static Image arrivingPlaneImage = new Image(Util.class.getResourceAsStream("/images/planeArriving.png"));
 
+
     public static int[] generateRandomSpawnPoint() { // generate random spawn point for arriving aircraft beyond one of four screen edges
         int whichEdge = (int) (Math.random() * (4 - 1 + 1)) + 1; // random 1-4
         int spawnX = 0;

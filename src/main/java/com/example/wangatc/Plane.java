@@ -122,7 +122,7 @@ public class Plane {
         // move plane
         double radians = Math.toRadians(this.currentHeading);
 
-        // move based on vector components
+        // move based on resultant velocity components
         this.x += this.speed * Math.cos(radians);
         this.y += this.speed * Math.sin(radians);
 
