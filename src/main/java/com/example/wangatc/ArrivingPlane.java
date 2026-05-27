@@ -20,6 +20,14 @@ public class ArrivingPlane extends Plane {
 
         this.setCurrentHeading(initialHeading);
         this.setTargetHeading(initialHeading);
+
+        // assign image
+        this.setSprite(Util.getArrivingPlaneSprite());
+
+        // set sprite properties
+        this.getSprite().setTranslateX(this.getX());
+        this.getSprite().setTranslateY(this.getY());
+        this.getSprite().setRotate(initialHeading + 90); // add 90 -> sprite drawn facing upwards
     }
 
 

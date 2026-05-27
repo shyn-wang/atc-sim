@@ -1,5 +1,7 @@
 package com.example.wangatc;
 
+import javafx.scene.image.ImageView;
+
 public class Plane {
     private double x;
     private double y;
@@ -9,22 +11,26 @@ public class Plane {
     private double currentHeading;
     private double targetHeading;
 
-    private int speed;
+    private double speed;
 
     private boolean mouseSelected;
+
+    private ImageView sprite;
 
     public Plane(String state, double x, double y) {
         this.state = state;
         this.x = x;
         this.y = y;
 
-        speed = 3;
+        speed = 0.5;
         mouseSelected = false;
 
         // initialize headings to 0
         this.currentHeading = 0.0;
         this.targetHeading = 0.0;
     }
+
+    // getters & setters
 
     public double getX() {
         return x;
@@ -67,5 +73,62 @@ public class Plane {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+
+    public ImageView getSprite() {
+        return sprite;
+    }
+
+    public void setSprite(ImageView sprite) {
+        this.sprite = sprite;
+    }
+
+
+    // logic methods
+
+    public void move() {
+        if (this.currentHeading != this.targetHeading) { // gradually turn plane towards target direction
+            double turnRate = 1.5; // turn rate per frame
+
+            // find smallest angle between current heading & target heading (which direction to turn in) -> normalization
+            double diff = this.targetHeading - this.currentHeading;
+
+            while (diff < -180) {
+                diff += 360;
+            }
+            while (diff > 180) {
+                diff -= 360;
+            }
+
+            // check if difference is small enough to snap to target heading
+            if (Math.abs(diff) <= turnRate) {
+                this.currentHeading = this.targetHeading;
+
+            } else {
+                // turn in direction of the shortest path based on diff
+                if (diff > 0) {
+                    this.currentHeading += turnRate; // positive -> clockwise
+                } else {
+                    this.currentHeading -= turnRate; // negative -> negative
+                }
+            }
+
+            // lock heading between 0-359
+            this.currentHeading = (this.currentHeading + 360) % 360;
+        }
+
+
+        // move plane
+        double radians = Math.toRadians(this.currentHeading);
+
+        // move based on vector components
+        this.x += this.speed * Math.cos(radians);
+        this.y += this.speed * Math.sin(radians);
+
+        // update sprite on screen
+        this.sprite.setTranslateX(this.x);
+        this.sprite.setTranslateY(this.y);
+        this.sprite.setRotate(this.currentHeading + 90);
     }
 }
