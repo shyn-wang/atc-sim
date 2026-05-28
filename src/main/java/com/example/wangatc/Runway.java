@@ -12,8 +12,6 @@ public class Runway {
     private double endX;
     private double endY;
 
-    private double heading; // required landing angle
-
     private Circle runwayStartPoint;
 
     public Runway(double startX, double startY, double endX, double endY) {
@@ -36,12 +34,38 @@ public class Runway {
         this.runwayStartPoint.setVisible(visible);
     }
 
-
     public double getStartX() {
         return this.startX;
     }
 
     public double getStartY() {
         return this.startY;
+    }
+
+    public double getEndX() {
+        return this.endX;
+    }
+
+    public double getEndY() {
+        return this.endY;
+    }
+
+    // Calculates the angle the runway is pointing
+    public double getHeading() {
+        double[] p1 = {startX, startY};
+        double[] p2 = {endX, endY};
+        return Util.getHeadingTo(p1, p2);
+    }
+
+    // Returns X coordinate 150 pixels behind the runway start
+    public double getFafX() {
+        double hdgRad = Math.toRadians(getHeading());
+        return startX - (Math.cos(hdgRad) * 70.0);
+    }
+
+    // Returns Y coordinate 150 pixels behind the runway start
+    public double getFafY() {
+        double hdgRad = Math.toRadians(getHeading());
+        return startY - (Math.sin(hdgRad) * 70.0);
     }
 }

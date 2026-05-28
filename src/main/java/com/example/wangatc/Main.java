@@ -81,7 +81,7 @@ public class Main extends Application {
 
 
     private void runGame() {
-        game.moveAllAirbornePlanes();
+        game.manageAllAirbornePlanes();
     }
 
 
