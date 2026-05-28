@@ -23,6 +23,10 @@ public class Game {
     private Plane selectedPlane = null; // tracks mouse selected plane
     private Line headingIndicator;
 
+
+    private Runway runway01;
+    private Runway runway02;
+
     public Game(Pane gameScreen) {
         this.gameScreen = gameScreen;
 
@@ -36,6 +40,14 @@ public class Game {
         this.takeoffQueueBacklog = new ArrayList<>();
 
         this.score = 0;
+
+        // create two runways starting on opposing sides of physical runway
+        this.runway01 = new Runway(917, 603, 986, 491); // bottom start
+        this.runway02 = new Runway(986, 491, 917, 603); // top start
+
+        // render runway start points
+        this.gameScreen.getChildren().add(runway01.getRunwayStartPoint());
+        this.gameScreen.getChildren().add(runway02.getRunwayStartPoint());
 
         // initialize input handlers and heading indicator line
         initializeHeadingIndicator();
@@ -61,6 +73,40 @@ public class Game {
                 headingIndicator.setEndX(e.getX());
                 headingIndicator.setEndY(e.getY());
 
+                if (selectedPlane instanceof ArrivingPlane) { // check if mouse is dragged to close to a runway -> attempt landing
+                    double snapRadius = 30.0;
+
+                    // 3. Check distance to Runway 01
+                    double dist01 = Math.hypot(e.getX() - runway01.getStartX(), e.getY() - runway01.getStartY());
+                    if (dist01 < snapRadius) { // snap endpoint of line to start point
+                        headingIndicator.setEndX(runway01.getStartX());
+                        headingIndicator.setEndY(runway01.getStartY());
+
+                        // check if landing is possible from current plane position
+                    }
+
+                    // 4. Check distance to Runway 02
+                    double dist02 = Math.hypot(e.getX() - runway02.getStartX(), e.getY() - runway02.getStartY());
+                    if (dist02 < snapRadius) {
+                        headingIndicator.setEndX(runway02.getStartX());
+                        headingIndicator.setEndY(runway02.getStartY());
+
+                        // check if landing is possible from current plane position
+                    }
+                }
+            }
+        });
+
+        // action listener for releasing mouse
+        this.gameScreen.setOnMouseReleased(e -> {
+            if (selectedPlane != null) {
+                if (selectedPlane instanceof ArrivingPlane) { // hide runway indicators if releasing an arriving plane
+                    runway01.setRunwayStartPointVisible(false);
+                    runway02.setRunwayStartPointVisible(false);
+                }
+
+                // update targetHeading based on mouse position at point of release
+
                 // calculate angle between center of plane & mouse endpoint
                 double[] p1 = {selectedPlane.getX(), selectedPlane.getY()};
                 double[] p2 = {e.getX(), e.getY()};
@@ -68,12 +114,7 @@ public class Game {
 
                 // set target heading to angle
                 selectedPlane.setTargetHeading(targetAngle);
-            }
-        });
 
-        // action listener for releasing mouse
-        this.gameScreen.setOnMouseReleased(e -> {
-            if (selectedPlane != null) { // reset properties -> stop tracking mouse movement
                 selectedPlane = null;
                 headingIndicator.setVisible(false);
             }
@@ -91,6 +132,9 @@ public class Game {
         // create separate mouse pressed action listener for each plane -> no need to loop through all planes
         plane.getSprite().setOnMousePressed(e -> {
             selectedPlane = plane;
+            runway01.setRunwayStartPointVisible(true); // display available runways for landing whenever an arriving plane is selected
+            runway02.setRunwayStartPointVisible(true);
+
             e.consume(); // delete click event -> layers below plane unaffected
         });
 
