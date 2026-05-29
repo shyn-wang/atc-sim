@@ -88,4 +88,13 @@ public class ArrivingPlane extends Plane {
             }
         }
     }
+
+    @Override
+    public void move() {
+        if (!this.getState().equals("airborne")) {
+            approachAndLand();
+        }
+
+        super.move();
+    }
 }

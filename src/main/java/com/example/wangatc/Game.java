@@ -50,6 +50,8 @@ public class Game {
         this.gameScreen.getChildren().add(runway01.getRunwayStartPoint());
         this.gameScreen.getChildren().add(runway02.getRunwayStartPoint());
 
+        this.runwayOccupied = false;
+
         // initialize input handlers and heading indicator line
         initializeHeadingIndicator();
         setupGlobalMouseHandlers();
@@ -165,7 +167,7 @@ public class Game {
 
         // create separate mouse pressed action listener for each plane -> no need to loop through all planes
         plane.getSprite().setOnMousePressed(e -> {
-            if (!plane.getState().equals("landing")) {
+            if (!plane.getState().equals("final approach") && !plane.getState().equals("landing")) { // planes on final approach or landing cannot be interacted with
                 selectedPlane = plane;
                 runway01.setRunwayStartPointVisible(true); // display available runways for landing whenever an arriving plane is selected
                 runway02.setRunwayStartPointVisible(true);
@@ -186,9 +188,9 @@ public class Game {
         }
 
         for (Plane plane : allAirbornePlanes) {
-            if (plane instanceof ArrivingPlane && !plane.getState().equals("airborne")) {
-                ((ArrivingPlane) plane).approachAndLand();
+            plane.move();
 
+            if (plane instanceof ArrivingPlane) {
                 if (plane.getState().equals("landing")) {
                     runwayOccupied = true;
 
@@ -197,8 +199,6 @@ public class Game {
                     runwayOccupied = false;
                 }
             }
-
-            plane.move();
         }
 
         // remove any planes that have reached their objective
