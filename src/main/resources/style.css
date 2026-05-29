@@ -3,3 +3,9 @@
     -fx-background-size: 1920px 1080px;
     -fx-background-repeat: no-repeat;
 }
+
+.scoreLabel {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}

@@ -1,5 +1,8 @@
 package com.example.wangatc;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -18,7 +21,8 @@ public class Game {
     private int maxTakeoffQueueSize;
     private ArrayList<Plane> takeoffQueueBacklog;
 
-    private int score;
+    IntegerProperty score; // use javafx property wrapper to manage score
+    Label scoreLabel;
 
     private Plane selectedPlane = null; // tracks mouse selected plane
     private Line headingIndicator;
@@ -40,7 +44,16 @@ public class Game {
         this.maxTakeoffQueueSize = 3;
         this.takeoffQueueBacklog = new ArrayList<>();
 
-        this.score = 0;
+        // configure score label
+        this.score = new SimpleIntegerProperty(0);
+        this.scoreLabel = new Label();
+        scoreLabel.textProperty().bind(score.asString("score: %d")); // set up automatic updating -> bind score variable// to label
+
+        scoreLabel.setLayoutX(Util.screenWidth - 150);
+        scoreLabel.setLayoutY(30);
+
+        scoreLabel.getStyleClass().add("scoreLabel");
+        this.gameScreen.getChildren().add(scoreLabel); // add label to scene
 
         // create two runways starting on opposing sides of physical runway
         this.runway01 = new Runway(917, 603, 986, 491); // bottom start
@@ -209,8 +222,7 @@ public class Game {
             if (plane instanceof ArrivingPlane) { // plane has landed
                 arrivingPlanes.remove(plane);
 
-                score++;
-                System.out.println("Plane landed successfully! Score: " + score);
+                score.set(score.get() + 1);
             }
 
             gameScreen.getChildren().remove(plane.getSprite());

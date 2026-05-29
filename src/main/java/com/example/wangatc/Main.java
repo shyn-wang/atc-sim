@@ -79,21 +79,9 @@ public class Main extends Application {
         gameLoop.start(); // initiate animation loop
     }
 
-
-
-
-
-
     private void runGame() {
         game.manageAllAirbornePlanes();
     }
-
-
-
-
-
-
-
 
     public static void main(String[] args) {
         launch(args);
