@@ -105,6 +105,8 @@ public class Game {
                 if (hoveredRunway != null) {
                     selectedPlane.setState("targetingRunway");
                     selectedPlane.setAssignedRunway(hoveredRunway);
+
+                    selectedPlane.setTurnRate(0.20); // reset to default if approach is cancelled
                 } else {
                     selectedPlane.setState("airborne");
                     selectedPlane.setAssignedRunway(null);
@@ -138,26 +140,26 @@ public class Game {
         // Calculate distance to the FAF
         double distanceToFAF = Math.hypot(planePos[0] - fafX, planePos[1] - fafY);
 
-        if (distanceToFAF < 250) {
-            // Very close to the FAF mark: Plane must already be perfectly aligned
-            return diff < 10;
+        // Distance thresholds (in pixels) and allowed heading deviation (in degrees)
+        if (distanceToFAF < 150) {
+            // INSIDE THE RADIUS: The plane is nearly on top of the FAF.
+            // It MUST be aligned. 10 degrees is good, but 7-8 is "pro" level.
+            return diff < 8;
         }
-        else if (distanceToFAF < 400) {
-            // Moderate distance from the FAF
-            return diff < 25;
-
-        } else if (distanceToFAF < 500) {
-            return diff < 35;
-
-        } else if (distanceToFAF < 600) {
-            return diff < 50;
-
-        } else if (distanceToFAF < 700) {
-            return diff < 60;
-
-        } else {
-            // Plenty of room: can approach from wide angles
-            return diff < 70;
+        else if (distanceToFAF < 300) {
+            // APPROACHING: Plane is about 3-4 turn-radii away.
+            // It needs to be getting serious. 20 degrees is a comfortable target.
+            return diff < 20;
+        }
+        else if (distanceToFAF < 500) {
+            // MID-RANGE: Plenty of room to correct.
+            // 40 degrees is a good "standard" entry angle.
+            return diff < 40;
+        }
+        else {
+            // LONG DISTANCE: The player has huge freedom.
+            // 65 degrees allows for wide sweeping entries.
+            return diff < 65;
         }
     }
 

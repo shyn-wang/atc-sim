@@ -78,7 +78,7 @@ public class Plane {
 //                this.targetHeading = assignedRunway.getHeading();
             } else {
                 // Plane is further out: Continue standard Tractrix curve
-                double carrotDistance = distanceAlongCenterline - 99.0;
+                double carrotDistance = distanceAlongCenterline - 90.0;
                 double carrotX = sx + (carrotDistance * backwardX);
                 double carrotY = sy + (carrotDistance * backwardY);
                 this.targetHeading = Util.getHeadingTo(new double[]{this.x, this.y}, new double[]{carrotX, carrotY});
@@ -92,7 +92,7 @@ public class Plane {
             this.targetHeading = Util.getHeadingTo(new double[]{this.x, this.y}, new double[]{sx, sy});
 
             // Touchdown check
-            if (Math.hypot(this.x - sx, this.y - sy) < 2.0) {
+            if (Math.hypot(this.x - sx, this.y - sy) < 1.0) {
                 this.state = "landing";
                 this.x = sx;
                 this.y = sy;
