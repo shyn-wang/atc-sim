@@ -28,6 +28,10 @@ public class Main extends Application {
         gameScreen.setClip(clipBox);
 
         game = new Game(gameScreen); // create game object
+
+        // test
+        game.createNewArrivingPlane();
+        game.createNewArrivingPlane();
         game.createNewArrivingPlane();
 
         // assign css tag

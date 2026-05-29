@@ -3,6 +3,9 @@ package com.example.wangatc;
 public class ArrivingPlane extends Plane {
     private Runway targetRunway;
 
+    double minScale = 0.7;
+    double scaleFactor = 1;
+
     public ArrivingPlane() {
         super("airborne", 0, 0);
 
@@ -67,6 +70,12 @@ public class ArrivingPlane extends Plane {
             double sx = targetRunway.getStartX();
             double sy = targetRunway.getStartY();
 
+            if (scaleFactor > minScale) {
+                this.getSprite().setScaleX(scaleFactor);
+                this.getSprite().setScaleY(scaleFactor);
+                scaleFactor -= 0.005;
+            }
+
             this.setTargetHeading(Util.getHeadingTo(new double[] {this.getX(), this.getY()}, new double[] {sx, sy})); // target runway start
 
             // touchdown check
@@ -83,7 +92,7 @@ public class ArrivingPlane extends Plane {
             this.setCurrentHeading(targetRunway.getHeading());
             this.setTargetHeading(targetRunway.getHeading());
 
-            if (Math.hypot(this.getX() - targetRunway.getEndX(), this.getY() - targetRunway.getEndY()) < 5.0) { // distance to end
+            if (Math.hypot(this.getX() - targetRunway.getEndX(), this.getY() - targetRunway.getEndY()) < 30.0) { // distance to end
                 this.setState("landed");
             }
         }
