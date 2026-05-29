@@ -12,6 +12,7 @@ public class Plane {
     private double targetHeading;
 
     private double speed;
+    double turnRate = 0.2; // turn rate per frame
 
     private Node sprite;
 
@@ -81,13 +82,22 @@ public class Plane {
         this.sprite = sprite;
     }
 
+    public double getTurnRate() {
+        return turnRate;
+    }
+
+    public void setTurnRate(double turnRate) {
+        this.turnRate = turnRate;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
 
     // logic methods
 
     public void move() {
         if (this.currentHeading != this.targetHeading) { // gradually turn plane towards target direction
-            double turnRate = 0.2; // turn rate per frame
-
             // find smallest angle between current heading & target heading (which direction to turn in) -> normalization
             double diff = this.targetHeading - this.currentHeading;
 
