@@ -9,3 +9,16 @@
     -fx-font-size: 24px;
     -fx-font-weight: bold;
 }
+
+.hotbar {
+    -fx-background-color: rgba(30, 30, 30, 0.0);
+    -fx-padding: 15;
+    -fx-background-radius: 10;
+}
+
+.slot {
+    -fx-border-color: #AAAAAA;
+    -fx-border-width: 2;
+    -fx-border-radius: 100;
+    -fx-background-color: transparent;
+}

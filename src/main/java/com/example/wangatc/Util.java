@@ -15,6 +15,16 @@ public class Util { // use static variables & methods -> enables access in other
     // load plane icons
     private static Image arrivingPlaneImage = new Image(Util.class.getResourceAsStream("/images/planeArriving.png"));
 
+    private static Image departingPlaneImageBlue = new Image(Util.class.getResourceAsStream("/images/planeBlue.png"));
+    private static Image departingPlaneImageGreen = new Image(Util.class.getResourceAsStream("/images/planeGreen.png"));
+    private static Image departingPlaneImageOrange = new Image(Util.class.getResourceAsStream("/images/planeOrange.png"));
+    private static Image departingPlaneImagePink = new Image(Util.class.getResourceAsStream("/images/planePink.png"));
+    private static Image departingPlaneImageRed = new Image(Util.class.getResourceAsStream("/images/planeRed.png"));
+    private static Image departingPlaneImageYellow = new Image(Util.class.getResourceAsStream("/images/planeYellow.png"));
+
+
+    // LOGIC METHODS
+
     public static double getHeadingTo(double[] p1, double[] p2) {
         double x1 = p1[0];
         double y1 = p1[1];
@@ -62,6 +72,9 @@ public class Util { // use static variables & methods -> enables access in other
         return new int[] {spawnX, spawnY};
     }
 
+
+    // CREATE PLANE SPRITE METHODS
+
     public static Node getArrivingPlaneSprite() {
         ImageView imageNode = new ImageView(arrivingPlaneImage); // wrap in ImageView -> enables javafx to render
 
@@ -82,4 +95,39 @@ public class Util { // use static variables & methods -> enables access in other
 
         return sprite;
     }
+
+    public static Node getDepartingPlaneSprite(int color) {
+        Image[] departingPlaneOptions = {
+                departingPlaneImageBlue,
+                departingPlaneImageGreen,
+                departingPlaneImageOrange,
+                departingPlaneImagePink,
+                departingPlaneImageRed,
+                departingPlaneImageYellow
+        };
+
+        ImageView imageNode = new ImageView(departingPlaneOptions[color]);
+
+        imageNode.setFitWidth(50);
+        imageNode.setFitHeight(50);
+        imageNode.setPreserveRatio(true);
+
+        // set origin of sprite to center -> enables rotation around central point
+        imageNode.setX(-25);
+        imageNode.setY(-25);
+
+        // create larger invisible circle around image -> larger click hitbox
+        Circle clickTarget = new Circle(0, 0, 30);
+        clickTarget.setFill(Color.color(0, 0, 0, 0.01)); // use 0.01 opacity -> completely transparent cannot register clicks
+
+        // combine into group container
+        Group sprite = new Group(imageNode, clickTarget);
+
+        return sprite;
+    }
+
+
+    // UI METHODS
+
+
 }

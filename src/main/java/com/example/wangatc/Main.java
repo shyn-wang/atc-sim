@@ -31,8 +31,8 @@ public class Main extends Application {
 
         // test
         game.createNewArrivingPlane();
-        game.createNewArrivingPlane();
-        game.createNewArrivingPlane();
+
+        game.createNewDepartingPlane();
 
         // assign css tag
         gameScreen.getStyleClass().add("background");
@@ -80,7 +80,7 @@ public class Main extends Application {
     }
 
     private void runGame() {
-        game.manageAllAirbornePlanes();
+        game.manageAllActivePlanes();
     }
 
     public static void main(String[] args) {

@@ -2,8 +2,11 @@ package com.example.wangatc;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
@@ -13,13 +16,12 @@ public class Game {
     private Pane gameScreen;
 
     private ArrayList<Plane> allActivePlanes;
-    private ArrayList<Plane> allAirbornePlanes; // does not include planes in motion on the runway
     private ArrayList<ArrivingPlane> arrivingPlanes;
     private ArrayList<DepartingPlane> departingPlanes;
 
-    private ArrayList<Plane> takeoffQueue; // includes all planes that must be placed on a runway
+    private ArrayList<DepartingPlane> takeoffQueue; // includes all planes that must be placed on a runway
     private int maxTakeoffQueueSize;
-    private ArrayList<Plane> takeoffQueueBacklog;
+    private ArrayList<DepartingPlane> takeoffQueueBacklog;
 
     IntegerProperty score; // use javafx property wrapper to manage score
     Label scoreLabel;
@@ -32,11 +34,13 @@ public class Game {
     private Runway runway02;
     private boolean runwayOccupied;
 
+
+    private HBox takeoffQueueHotbar;
+
     public Game(Pane gameScreen) {
         this.gameScreen = gameScreen;
 
         this.allActivePlanes = new ArrayList<>();
-        this.allAirbornePlanes = new ArrayList<>();
         this.arrivingPlanes = new ArrayList<>();
         this.departingPlanes = new ArrayList<>();
 
@@ -68,10 +72,55 @@ public class Game {
         // initialize input handlers and heading indicator line
         initializeHeadingIndicator();
         setupGlobalMouseHandlers();
+
+        // initialize hotbar
+        initializeHotbar();
     }
 
     public boolean isRunwayOccupied() {
         return runwayOccupied;
+    }
+
+    private void initializeHotbar() {
+        takeoffQueueHotbar = new HBox(15); // 15 px horizontal spacing between slots
+
+        takeoffQueueHotbar.setScaleX(0.7);
+        takeoffQueueHotbar.setScaleY(0.7);
+
+        // position in the bottom left corner
+        takeoffQueueHotbar.setLayoutX(10);
+        takeoffQueueHotbar.setLayoutY(Util.screenHeight - 130);
+
+        takeoffQueueHotbar.getStyleClass().add("hotbar");
+
+        this.gameScreen.getChildren().add(takeoffQueueHotbar); // add to scene
+
+        // render empty slots
+        updateTakeoffHotbarUI();
+    }
+
+    public void updateTakeoffHotbarUI() {
+        takeoffQueueHotbar.getChildren().clear(); // clear existing slots
+
+        for (int i = 0; i < maxTakeoffQueueSize; i++) { // create # of slots based on predefined max size
+            // new slot
+            StackPane slot = new StackPane();
+            slot.setPrefSize(80, 80);
+            slot.getStyleClass().add("slot");
+
+            // check if slot can be filled by a plane
+            if (i < takeoffQueue.size()) {
+                Plane queuedPlane = takeoffQueue.get(i);
+                Node planeSprite = queuedPlane.getSprite();
+
+                planeSprite.setTranslateX(0); // set position relative to slot
+                planeSprite.setTranslateY(0);
+
+                slot.getChildren().add(planeSprite); // add sprite to slot
+            }
+
+            takeoffQueueHotbar.getChildren().add(slot); // add slot to hotbar
+        }
     }
 
     private void initializeHeadingIndicator() {
@@ -88,15 +137,28 @@ public class Game {
         // action listener for dragging mouse across screen
         this.gameScreen.setOnMouseDragged(e -> {
             if (selectedPlane != null) {
-                // display heading indicator once mouse is dragged & draw endpoint at mouse cursor
-                headingIndicator.setVisible(true);
-                headingIndicator.setStroke(Color.WHITE); // reset color
-                headingIndicator.setEndX(e.getX());
-                headingIndicator.setEndY(e.getY());
+                if (!selectedPlane.getState().equals("dragging from takeoff queue")) { // not in takeoff queue -> dragging indicates navigation
+                    // display heading indicator once mouse is dragged & draw endpoint at mouse cursor
+                    headingIndicator.setVisible(true);
+                    headingIndicator.setStroke(Color.WHITE); // reset color
+                    headingIndicator.setEndX(e.getX());
+                    headingIndicator.setEndY(e.getY());
 
-                selectedPlane.setState("airborne"); // reset to initial state
+                    selectedPlane.setState("airborne"); // reset to initial state
+                }
 
-                if (selectedPlane instanceof ArrivingPlane) { // check if mouse is dragged to close to a runway -> attempt landing
+                if (selectedPlane instanceof DepartingPlane) {
+                    if (selectedPlane.getState().equals("dragging from takeoff queue")) {
+                        selectedPlane.setX(e.getX());
+                        selectedPlane.setY(e.getY());
+                        selectedPlane.getSprite().setTranslateX(e.getX());
+                        selectedPlane.getSprite().setTranslateY(e.getY());
+
+                    } else if (selectedPlane.getState().equals("airborne")) { // check if mouse is dragged to corresponding waypoint
+
+                    }
+
+                } else if (selectedPlane instanceof ArrivingPlane) { // check if mouse is dragged to close to a runway -> attempt landing
                     ((ArrivingPlane) selectedPlane).setTargetRunway(null); // no target runway initially
 
                     double snapRadius = 30.0;
@@ -139,7 +201,7 @@ public class Game {
 
         // action listener for releasing mouse
         this.gameScreen.setOnMouseReleased(e -> {
-            if (selectedPlane != null) {
+            if (selectedPlane != null && !selectedPlane.getState().equals("dragging from takeoff queue")) { // planes in takeoff queue have a separate mouse release listener
                 if (selectedPlane instanceof ArrivingPlane) { // hide runway indicators if releasing an arriving plane
                     runway01.setRunwayStartPointVisible(false);
                     runway02.setRunwayStartPointVisible(false);
@@ -175,7 +237,6 @@ public class Game {
         ArrivingPlane plane = new ArrivingPlane();
 
         this.allActivePlanes.add(plane);
-        this.allAirbornePlanes.add(plane);
         this.arrivingPlanes.add(plane);
 
         // create separate mouse pressed action listener for each plane -> no need to loop through all planes
@@ -192,7 +253,110 @@ public class Game {
         this.gameScreen.getChildren().add(plane.getSprite()); // add sprite to scene
     }
 
-    public void manageAllAirbornePlanes() {
+    public void createNewDepartingPlane() {
+        int whichColor = (int) (Math.random() * (6)); // random 0-5
+
+        DepartingPlane plane = new DepartingPlane(whichColor);
+
+        if (this.takeoffQueue.size() < this.maxTakeoffQueueSize) {
+            this.takeoffQueue.add(plane);
+        } else {
+            this.takeoffQueueBacklog.add(plane);
+        }
+
+        updateTakeoffHotbarUI();
+
+        // mouse listener for clicking departing planes
+        plane.getSprite().setOnMousePressed(e -> {
+            // in takeoff queue -> pick up from hotbar
+            if (takeoffQueue.contains(plane)) {
+                selectedPlane = plane;
+                selectedPlane.setState("dragging from takeoff queue");
+
+                // visually remove plane from hotbar slot and add to the main game screen
+                if (plane.getSprite().getParent() instanceof StackPane) {
+                    ((StackPane) plane.getSprite().getParent()).getChildren().remove(plane.getSprite());
+                }
+
+                if (!gameScreen.getChildren().contains(plane.getSprite())) {
+                    gameScreen.getChildren().add(plane.getSprite()); // add plane to game scene
+                }
+
+                plane.getSprite().setLayoutX(0); // reset positions relative to new parent (gamescreen instead of hotbar) -> keeps plane aligned with cursor
+                plane.getSprite().setLayoutY(0);
+
+                // pre-position at cursor -> no visual jump before dragging
+                javafx.geometry.Point2D localCoords = gameScreen.sceneToLocal(e.getSceneX(), e.getSceneY()); // convert mouse position on screen to position in scene -> required since mouse listener is applied to plane sprite instead of screen
+                plane.setX(localCoords.getX());
+                plane.setY(localCoords.getY());
+                plane.getSprite().setTranslateX(localCoords.getX());
+                plane.getSprite().setTranslateY(localCoords.getY());
+
+                // show runway targets
+                runway01.setRunwayStartPointVisible(true);
+                runway02.setRunwayStartPointVisible(true);
+
+            } else if (!plane.getState().equals("taking off")) { // enable user guided navigation
+                selectedPlane = plane;
+            }
+
+            e.consume();
+        });
+
+        // mouse released listener
+        plane.getSprite().setOnMouseReleased(e -> {
+            if (selectedPlane == plane && plane.getState().equals("dragging from takeoff queue")) { // only runs when dropping planes previously in hotbar
+                runway01.setRunwayStartPointVisible(false);
+                runway02.setRunwayStartPointVisible(false);
+
+                double snapRadius = 30.0;
+                Runway target = null;
+
+                // check distance to runway 01 and 02
+                if (Math.hypot(plane.getX() - runway01.getStartX(), plane.getY() - runway01.getStartY()) < snapRadius) {
+                    target = runway01;
+
+                } else if (Math.hypot(plane.getX() - runway02.getStartX(), plane.getY() - runway02.getStartY()) < snapRadius) {
+                    target = runway02;
+                }
+
+                // if dropped on a valid runway and the runway isn't currently occupied
+                if (target != null && !isRunwayOccupied()) {
+                    // snap to runway
+                    plane.setX(target.getStartX());
+                    plane.setY(target.getStartY());
+                    plane.setCurrentHeading(target.getHeading());
+                    plane.setTargetHeading(target.getHeading());
+
+                    plane.getSprite().setScaleX(plane.getMinScale()); // min scale on ground
+                    plane.getSprite().setScaleY(plane.getMinScale());
+
+                    plane.setState("taking off"); // trigger take off logic
+
+                    // add to active game loop
+                    allActivePlanes.add(plane);
+
+                    // update takeoff queue
+                    takeoffQueue.remove(plane);
+
+                    if (!takeoffQueueBacklog.isEmpty()) {
+                        takeoffQueue.add(takeoffQueueBacklog.remove(0));
+                    }
+
+                } else {
+                    // not dropped on runway -> return to hotbar
+                    plane.setState("ground");
+                }
+
+                selectedPlane = null; // deselect plane
+                updateTakeoffHotbarUI(); // refresh hotbar
+            }
+
+            e.consume();
+        });
+    }
+
+    public void manageAllActivePlanes() {
         ArrayList<Plane> planesToRemove = new ArrayList<>();
 
         if (selectedPlane != null) { // continuously update starting point of heading indicator to position of plane if selected
@@ -200,7 +364,7 @@ public class Game {
             headingIndicator.setStartY(selectedPlane.getY());
         }
 
-        for (Plane plane : allAirbornePlanes) {
+        for (Plane plane : allActivePlanes) {
             plane.move();
 
             if (plane instanceof ArrivingPlane) {
@@ -216,7 +380,6 @@ public class Game {
 
         // remove any planes that have reached their objective
         for (Plane plane : planesToRemove) {
-            allAirbornePlanes.remove(plane);
             allActivePlanes.remove(plane);
 
             if (plane instanceof ArrivingPlane) { // plane has landed
