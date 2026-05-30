@@ -77,6 +77,61 @@ public class Util { // use static variables & methods -> enables access in other
         return new int[] {spawnX, spawnY};
     }
 
+    public static double[] generateRandomWaypointLocation(ArrayList<Waypoint> existingWaypoints, int color) {
+        // if a waypoint of a specific color already exists, spawn all waypoints of that color at the same location
+        for (Waypoint waypoint : existingWaypoints) {
+            if (waypoint.getColor() == color) {
+                return new double[] {waypoint.getX(), waypoint.getY()};
+            }
+        }
+
+        // waypoint of specific color does not already exist -> generate random spawn position
+        boolean isValid;
+        double x = 0;
+        double y = 0;
+
+        do {
+            isValid = true;
+            x = 50 + Math.random() * (Util.screenWidth - 100); // 50 px margin on both sides
+            y = 50 + Math.random() * (Util.screenHeight - 100);
+
+            // block point from being within exclusion square
+            if (isInsideExclusionZone(x, y)) {
+                isValid = false;
+            }
+
+            // check distance to already placed waypoints
+            if (isValid) {
+                for (Waypoint waypoint : existingWaypoints) {
+                    if (Math.hypot(x - waypoint.getX(), y - waypoint.getY()) < 150) { // spawn position cannot be within 150 px of other waypoints
+                        isValid = false;
+                        break;
+                    }
+                }
+            }
+        } while (!isValid);
+
+        return new double[] {x, y};
+    }
+
+    private static boolean isInsideExclusionZone(double x, double y) {
+        // find center of screen
+        double centerX = Util.screenWidth / 2.0; // 960
+        double centerY = Util.screenHeight / 2.0; // 540
+
+        double squareSize = 500;
+        double halfSize = squareSize / 2.0; // 250
+
+        // define borders
+        double minX = centerX - halfSize; // 710
+        double maxX = centerX + halfSize; // 1210
+        double minY = centerY - halfSize; // 290
+        double maxY = centerY + halfSize; // 790
+
+        // check if (x,y) is in square
+        return (x >= minX && x <= maxX) && (y >= minY && y <= maxY);
+    }
+
 
     // CREATE PLANE SPRITE METHODS
 

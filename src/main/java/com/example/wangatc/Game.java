@@ -34,6 +34,8 @@ public class Game {
 
     private HBox takeoffQueueHotbar;
 
+    private ArrayList<Waypoint> waypoints;
+
 
     public Game(Pane gameScreen) {
         this.gameScreen = gameScreen;
@@ -45,6 +47,8 @@ public class Game {
         this.takeoffQueue = new ArrayList<>();
         this.maxTakeoffQueueSize = 3;
         this.takeoffQueueBacklog = new ArrayList<>();
+
+        this.waypoints = new ArrayList<>();
 
         // configure score label
         this.score = new SimpleIntegerProperty(0);
@@ -206,7 +210,9 @@ public class Game {
         this.gameScreen.getChildren().add(plane.getSprite()); // add sprite to scene
     }
 
+
     public void createNewDepartingPlane() {
+        // create plane
         int whichColor = (int) (Math.random() * (6)); // random 0-5
 
         DepartingPlane plane = new DepartingPlane(whichColor);
@@ -218,6 +224,13 @@ public class Game {
         }
 
         Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue);
+
+        // create corresponding waypoint
+        Waypoint waypoint = new Waypoint(whichColor, waypoints);
+
+        plane.setDestination(waypoint);
+        this.gameScreen.getChildren().add(waypoint.getSprite()); // add to scene
+
 
         // mouse listener for clicking departing planes
         plane.getSprite().setOnMousePressed(e -> {

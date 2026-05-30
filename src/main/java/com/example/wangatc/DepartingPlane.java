@@ -12,4 +12,8 @@ public class DepartingPlane extends Plane {
         this.color = possibleColors[color];
         this.setSprite(Util.getDepartingPlaneSprite(color));
     }
+
+    public void setDestination(Waypoint destination) {
+        this.destination = destination;
+    }
 }
