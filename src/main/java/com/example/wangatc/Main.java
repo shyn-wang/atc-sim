@@ -33,6 +33,8 @@ public class Main extends Application {
         game.createNewArrivingPlane();
 
         game.createNewDepartingPlane();
+        game.createNewDepartingPlane();
+        game.createNewDepartingPlane();
 
         // assign css tag
         gameScreen.getStyleClass().add("background");

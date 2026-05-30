@@ -49,7 +49,7 @@ public class ArrivingPlane extends Plane {
             // dot product to find how far back the plane is along the extended centerline
             double distanceAlongCenterline = ((this.getX() - sx) * backwardX) + ((this.getY() - sy) * backwardY);
 
-            // if the plane has crossed the 70px mark, transition to final approach
+            // if the plane has crossed the 70 px mark, transition to final approach
             if (distanceAlongCenterline <= 70.0) {
                 this.setState("final approach");
 
@@ -99,7 +99,7 @@ public class ArrivingPlane extends Plane {
     @Override
     public void move() {
         if (!this.getState().equals("airborne")) {
-            approachAndLand();
+            this.approachAndLand();
         }
 
         super.move();

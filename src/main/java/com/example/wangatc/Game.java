@@ -91,7 +91,7 @@ public class Game {
 
 
     private void setupGlobalMouseHandlers() {
-        // action listener for dragging mouse across screen
+        // global action listener for dragging mouse across screen
         this.gameScreen.setOnMouseDragged(e -> {
             if (selectedPlane != null) {
                 if (!selectedPlane.getState().equals("dragging from takeoff queue")) { // not in takeoff queue -> dragging indicates navigation
@@ -156,7 +156,7 @@ public class Game {
             }
         });
 
-        // action listener for releasing mouse
+        // global action listener for releasing mouse
         this.gameScreen.setOnMouseReleased(e -> {
             if (selectedPlane != null && !selectedPlane.getState().equals("dragging from takeoff queue")) { // planes in takeoff queue have a separate mouse release listener
                 if (selectedPlane instanceof ArrivingPlane) { // hide runway indicators if releasing an arriving plane
@@ -262,7 +262,7 @@ public class Game {
                 runway01.setRunwayStartPointVisible(true);
                 runway02.setRunwayStartPointVisible(true);
 
-            } else if (!plane.getState().equals("taking off")) { // enable user guided navigation
+            } else if (!plane.getState().equals("taking off") && !plane.getState().equals("climb")) { // enable user guided navigation
                 selectedPlane = plane;
             }
 
@@ -288,6 +288,8 @@ public class Game {
 
                 // if dropped on a valid runway and the runway isn't currently occupied
                 if (target != null && !isRunwayOccupied()) {
+                    plane.setTakeoffRunway(target);
+
                     // snap to runway
                     plane.setX(target.getStartX());
                     plane.setY(target.getStartY());
@@ -317,9 +319,9 @@ public class Game {
 
                 selectedPlane = null; // deselect plane
                 Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue); // refresh hotbar
-            }
 
-            e.consume();
+                e.consume();
+            }
         });
     }
 
@@ -340,6 +342,14 @@ public class Game {
 
                 } else if (plane.getState().equals("landed")) {
                     planesToRemove.add(plane);
+                    runwayOccupied = false;
+                }
+
+            } else if (plane instanceof DepartingPlane) {
+                if (plane.getState().equals("taking off")) {
+                    runwayOccupied = true;
+
+                } else if (plane.getState().equals("airborne")) {
                     runwayOccupied = false;
                 }
             }

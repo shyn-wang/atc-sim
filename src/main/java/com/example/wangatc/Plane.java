@@ -108,6 +108,10 @@ public class Plane {
         return minScale;
     }
 
+    public void setMinScale(double minScale) {
+        this.minScale = minScale;
+    }
+
     // logic methods
 
     public void move() {
