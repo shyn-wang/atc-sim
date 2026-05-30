@@ -333,25 +333,22 @@ public class Game {
             headingIndicator.setStartY(selectedPlane.getY());
         }
 
+        runwayOccupied = false; // assume runway is unoccupied at start of each frame
+
         for (Plane plane : allActivePlanes) {
             plane.move();
 
-            if (plane instanceof ArrivingPlane) {
-                if (plane.getState().equals("landing")) {
-                    runwayOccupied = true;
+            if (plane.getState().equals("landing") || plane.getState().equals("taking off") || plane.getState().equals("climb")) {
+                runwayOccupied = true;
+            }
 
-                } else if (plane.getState().equals("landed")) {
+            if (plane instanceof ArrivingPlane) {
+                if (plane.getState().equals("landed")) {
                     planesToRemove.add(plane);
-                    runwayOccupied = false;
                 }
 
             } else if (plane instanceof DepartingPlane) {
-                if (plane.getState().equals("taking off")) {
-                    runwayOccupied = true;
 
-                } else if (plane.getState().equals("airborne")) {
-                    runwayOccupied = false;
-                }
             }
         }
 
