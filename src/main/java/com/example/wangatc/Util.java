@@ -4,8 +4,13 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+
+import java.util.ArrayList;
 
 public class Util { // use static variables & methods -> enables access in other classes without creating a util object
     public static int screenWidth = 1920;
@@ -129,5 +134,55 @@ public class Util { // use static variables & methods -> enables access in other
 
     // UI METHODS
 
+    public static Line initializeHeadingIndicator() {
+        Line headingIndicator = new Line();
+        headingIndicator.setStroke(Color.WHITE);
+        headingIndicator.setStrokeWidth(2.0);
+        headingIndicator.getStrokeDashArray().addAll(10d, 5d); // dashed line
+        headingIndicator.setVisible(false); // initially invisible
 
+        return headingIndicator;
+    }
+
+    public static HBox initializeHotbar() {
+        HBox takeoffQueueHotbar = new HBox(15); // 15 px horizontal spacing between slots
+
+        takeoffQueueHotbar.setScaleX(0.7);
+        takeoffQueueHotbar.setScaleY(0.7);
+
+        // position in the bottom left corner
+        takeoffQueueHotbar.setLayoutX(10);
+        takeoffQueueHotbar.setLayoutY(screenHeight - 130);
+
+        takeoffQueueHotbar.getStyleClass().add("hotbar");
+
+        return takeoffQueueHotbar;
+    }
+
+    public static void updateTakeoffHotbarUI(HBox takeoffQueueHotbar, int maxTakeoffQueueSize, ArrayList<DepartingPlane> takeoffQueue) {
+        takeoffQueueHotbar.getChildren().clear(); // clear existing slots
+
+        for (int i = 0; i < maxTakeoffQueueSize; i++) { // create # of slots based on predefined max size
+            // new slot
+            StackPane slot = new StackPane();
+            slot.setPrefSize(80, 80);
+            slot.getStyleClass().add("slot");
+
+            // check if slot can be filled by a plane
+            if (i < takeoffQueue.size()) {
+                Plane queuedPlane = takeoffQueue.get(i);
+
+                if (!queuedPlane.getState().equals("dragging from takeoff queue")) { // if called while a plane is being dragged -> will not reset plane to hotbar
+                    Node planeSprite = queuedPlane.getSprite();
+
+                    planeSprite.setTranslateX(0); // set position relative to slot
+                    planeSprite.setTranslateY(0);
+
+                    slot.getChildren().add(planeSprite); // add sprite to slot
+                }
+            }
+
+            takeoffQueueHotbar.getChildren().add(slot); // add slot to hotbar
+        }
+    }
 }

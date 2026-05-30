@@ -2,7 +2,6 @@ package com.example.wangatc;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -29,13 +28,12 @@ public class Game {
     private Plane selectedPlane = null; // tracks mouse selected plane
     private Line headingIndicator;
 
-
     private Runway runway01;
     private Runway runway02;
     private boolean runwayOccupied;
 
-
     private HBox takeoffQueueHotbar;
+
 
     public Game(Pane gameScreen) {
         this.gameScreen = gameScreen;
@@ -69,69 +67,24 @@ public class Game {
 
         this.runwayOccupied = false;
 
-        // initialize input handlers and heading indicator line
-        initializeHeadingIndicator();
-        setupGlobalMouseHandlers();
+        // initialize heading indicator line
+        this.headingIndicator = Util.initializeHeadingIndicator();
+        this.gameScreen.getChildren().add(headingIndicator); // add to scene
 
         // initialize hotbar
-        initializeHotbar();
+        this.takeoffQueueHotbar = Util.initializeHotbar();
+        this.gameScreen.getChildren().add(takeoffQueueHotbar);
+        Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue); // render empty slots
+
+        // initialize global mouse listeners
+        setupGlobalMouseHandlers();
     }
+
 
     public boolean isRunwayOccupied() {
         return runwayOccupied;
     }
 
-    private void initializeHotbar() {
-        takeoffQueueHotbar = new HBox(15); // 15 px horizontal spacing between slots
-
-        takeoffQueueHotbar.setScaleX(0.7);
-        takeoffQueueHotbar.setScaleY(0.7);
-
-        // position in the bottom left corner
-        takeoffQueueHotbar.setLayoutX(10);
-        takeoffQueueHotbar.setLayoutY(Util.screenHeight - 130);
-
-        takeoffQueueHotbar.getStyleClass().add("hotbar");
-
-        this.gameScreen.getChildren().add(takeoffQueueHotbar); // add to scene
-
-        // render empty slots
-        updateTakeoffHotbarUI();
-    }
-
-    public void updateTakeoffHotbarUI() {
-        takeoffQueueHotbar.getChildren().clear(); // clear existing slots
-
-        for (int i = 0; i < maxTakeoffQueueSize; i++) { // create # of slots based on predefined max size
-            // new slot
-            StackPane slot = new StackPane();
-            slot.setPrefSize(80, 80);
-            slot.getStyleClass().add("slot");
-
-            // check if slot can be filled by a plane
-            if (i < takeoffQueue.size()) {
-                Plane queuedPlane = takeoffQueue.get(i);
-                Node planeSprite = queuedPlane.getSprite();
-
-                planeSprite.setTranslateX(0); // set position relative to slot
-                planeSprite.setTranslateY(0);
-
-                slot.getChildren().add(planeSprite); // add sprite to slot
-            }
-
-            takeoffQueueHotbar.getChildren().add(slot); // add slot to hotbar
-        }
-    }
-
-    private void initializeHeadingIndicator() {
-        headingIndicator = new Line();
-        headingIndicator.setStroke(Color.WHITE);
-        headingIndicator.setStrokeWidth(2.0);
-        headingIndicator.getStrokeDashArray().addAll(10d, 5d); // dashed line
-        headingIndicator.setVisible(false); // initially invisible
-
-        this.gameScreen.getChildren().add(headingIndicator); // add to scene
-    }
 
     private void setupGlobalMouseHandlers() {
         // action listener for dragging mouse across screen
@@ -264,7 +217,7 @@ public class Game {
             this.takeoffQueueBacklog.add(plane);
         }
 
-        updateTakeoffHotbarUI();
+        Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue);
 
         // mouse listener for clicking departing planes
         plane.getSprite().setOnMousePressed(e -> {
@@ -335,6 +288,7 @@ public class Game {
 
                     // add to active game loop
                     allActivePlanes.add(plane);
+                    departingPlanes.add(plane);
 
                     // update takeoff queue
                     takeoffQueue.remove(plane);
@@ -349,7 +303,7 @@ public class Game {
                 }
 
                 selectedPlane = null; // deselect plane
-                updateTakeoffHotbarUI(); // refresh hotbar
+                Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue); // refresh hotbar
             }
 
             e.consume();

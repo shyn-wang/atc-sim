@@ -3,9 +3,6 @@ package com.example.wangatc;
 public class ArrivingPlane extends Plane {
     private Runway targetRunway;
 
-    double minScale = 0.7;
-    double scaleFactor = 1;
-
     public ArrivingPlane() {
         super("airborne", 0, 0);
 
@@ -70,10 +67,11 @@ public class ArrivingPlane extends Plane {
             double sx = targetRunway.getStartX();
             double sy = targetRunway.getStartY();
 
-            if (scaleFactor > minScale) {
-                this.getSprite().setScaleX(scaleFactor);
-                this.getSprite().setScaleY(scaleFactor);
-                scaleFactor -= 0.005;
+            if (this.getScaleFactor() > this.getMinScale()) {
+                this.getSprite().setScaleX(this.getScaleFactor());
+                this.getSprite().setScaleY(this.getScaleFactor());
+
+                this.setScaleFactor(this.getScaleFactor() - 0.005);
             }
 
             this.setTargetHeading(Util.getHeadingTo(new double[] {this.getX(), this.getY()}, new double[] {sx, sy})); // target runway start

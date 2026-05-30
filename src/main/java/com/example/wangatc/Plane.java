@@ -15,6 +15,8 @@ public class Plane {
     double turnRate = 0.2; // turn rate per frame
 
     private Node sprite;
+    private double minScale = 0.7;
+    private double scaleFactor = 1;
 
     public Plane(String state, double x, double y) {
         this.state = state;
@@ -92,6 +94,18 @@ public class Plane {
 
     public void setSpeed(double speed) {
         this.speed = speed;
+    }
+
+    public double getScaleFactor() {
+        return scaleFactor;
+    }
+
+    public void setScaleFactor(double scaleFactor) {
+        this.scaleFactor = scaleFactor;
+    }
+
+    public double getMinScale() {
+        return minScale;
     }
 
     // logic methods
