@@ -122,6 +122,7 @@ public class Game {
                             // check if approach is possible from current position
                             if (destination.isReachable(selectedPlane)) {
                                 headingIndicator.setStroke(Color.LIGHTGREEN);
+                                selectedPlane.setState("locked on waypoint"); // queue navigation to waypoint
 
                             } else {
                                 headingIndicator.setStroke(Color.RED);
@@ -180,6 +181,11 @@ public class Game {
                     if (((ArrivingPlane) selectedPlane).getTargetRunway() != null) { // valid approach has been queued -> begin approach
                         selectedPlane.setState("targeting runway");
                         selectedPlane.setTurnRate(0.23); // increase turn rate for approach and landing
+                    }
+
+                } else if (selectedPlane instanceof DepartingPlane) {
+                    if (selectedPlane.getState().equals("locked on waypoint")) {
+                        selectedPlane.setState("targeting waypoint"); // begin autotracking to waypoint
                     }
                 }
 
@@ -362,7 +368,9 @@ public class Game {
                 }
 
             } else if (plane instanceof DepartingPlane) {
-
+                if (plane.getState().equals("reached waypoint")) {
+                    planesToRemove.add(plane);
+                }
             }
         }
 
@@ -372,6 +380,13 @@ public class Game {
 
             if (plane instanceof ArrivingPlane) { // plane has landed
                 arrivingPlanes.remove(plane);
+                score.set(score.get() + 1);
+
+            } else if (plane instanceof DepartingPlane) { // plane has reached waypoint
+                departingPlanes.remove(plane);
+
+                waypoints.remove(((DepartingPlane) plane).getDestination());
+                gameScreen.getChildren().remove(((DepartingPlane) plane).getDestination().getSprite());
 
                 score.set(score.get() + 1);
             }

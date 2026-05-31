@@ -52,10 +52,26 @@ public class DepartingPlane extends Plane {
         }
     }
 
+    public void navigateToWaypoint() {
+        double targetX = this.destination.getX();
+        double targetY = this.destination.getY();
+
+        // continuously update target heading to point towards waypoint
+        this.setTargetHeading(Util.getHeadingTo(new double[] {this.getX(), this.getY()}, new double[] {targetX, targetY}));
+
+        // check if waypoint is reached
+        if (Math.hypot(this.getX() - targetX, this.getY() - targetY) < 5.0) {
+            this.setState("reached waypoint");
+        }
+    }
+
     @Override
     public void move() {
         if (this.getState().equals("taking off") || this.getState().equals("climb")) {
             this.takeOff();
+
+        } else if (this.getState().equals("targeting waypoint")) {
+            this.navigateToWaypoint();
         }
 
         super.move();
