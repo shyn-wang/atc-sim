@@ -112,7 +112,21 @@ public class Game {
                         selectedPlane.getSprite().setTranslateY(e.getY());
 
                     } else if (selectedPlane.getState().equals("airborne")) { // check if mouse is dragged to corresponding waypoint
+                        double snapRadius = 40.0;
+                        Waypoint destination = ((DepartingPlane) selectedPlane).getDestination();
 
+                        if (Math.hypot(e.getX() - destination.getX(), e.getY() - destination.getY()) < snapRadius) { // snap mouse to waypoint when dragged close enough
+                            headingIndicator.setEndX(destination.getX());
+                            headingIndicator.setEndY(destination.getY());
+
+                            // check if approach is possible from current position
+                            if (destination.isReachable(selectedPlane)) {
+                                headingIndicator.setStroke(Color.LIGHTGREEN);
+
+                            } else {
+                                headingIndicator.setStroke(Color.RED);
+                            }
+                        }
                     }
 
                 } else if (selectedPlane instanceof ArrivingPlane) { // check if mouse is dragged to close to a runway -> attempt landing

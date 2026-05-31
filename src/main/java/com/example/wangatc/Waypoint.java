@@ -67,4 +67,44 @@ public class Waypoint {
     public Circle getSprite() {
         return sprite;
     }
+
+
+    public boolean isReachable(Plane plane) {
+        double wpX = this.getX();
+        double wpY = this.getY();
+
+        // calculate minimum turning radius of plane based on speed & turn rate
+        double radius = (180.0 * plane.getSpeed()) / (Math.PI * plane.getTurnRate());
+
+        // determine whether plane must turn left or right to face waypoint
+
+        double headingToWp = Util.getHeadingTo(new double[] {plane.getX(), plane.getY()}, new double[] {wpX, wpY}); // angle between plane & waypoint
+        double diff = headingToWp - plane.getCurrentHeading(); // difference in the required angle to reach the waypoint & the plane's current heading
+
+        while (diff < -180) { // normalize difference -> -180 to 180
+            diff += 360;
+        }
+        while (diff > 180) {
+            diff -= 360;
+        }
+
+        // find center coordinates of the turning circle (to left or right of plane based on which way plane should turn)
+        double radians = Math.toRadians(plane.getCurrentHeading());
+        double centerX, centerY;
+
+        if (diff >= 0) { // turn right -> clockwise
+            centerX = plane.getX() - (radius * Math.sin(radians)); // find center of turning radius circle to right of plane -> always perpendicular to plane direction at a distance of 1 radius
+            centerY = plane.getY() + (radius * Math.cos(radians));
+
+        } else { // turn left -> counter-clockwise
+            centerX = plane.getX() + radius * Math.sin(radians); // find center of turning radius circle to left of plane
+            centerY = plane.getY() - radius * Math.cos(radians);
+        }
+
+        // check if waypoint is inside the turning circle radius -> plane is unable to reach waypoint if true
+        double distanceToCenter = Math.hypot(wpX - centerX, wpY - centerY);
+
+        // waypoint is outside of the plane's turning radius when its distance to the center of the turning circle is greater than the radius
+        return distanceToCenter >= radius;
+    }
 }

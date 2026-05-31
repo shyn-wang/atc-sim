@@ -9,10 +9,16 @@ public class DepartingPlane extends Plane {
     public DepartingPlane(int color) {
         super("ground", 0, 0);
 
+        this.setSpeed(0.25);
+
         // create sprite
         String[] possibleColors = {"blue", "green", "orange", "pink", "red", "yellow"};
         this.color = possibleColors[color];
         this.setSprite(Util.getDepartingPlaneSprite(color));
+    }
+
+    public Waypoint getDestination() {
+        return destination;
     }
 
     public void setDestination(Waypoint destination) {
@@ -29,8 +35,12 @@ public class DepartingPlane extends Plane {
                 this.setState("climb");
             }
 
-        } else if (this.getState().equals("climb")) { // increase sprite size
-            if (this.getMinScale() < this.getScaleFactor()) {
+        } else if (this.getState().equals("climb")) {
+            if (this.getSpeed() < 0.35) {
+                this.setSpeed(this.getSpeed() + 0.001); // increase speed from ground speed to flight speed
+            }
+
+            if (this.getMinScale() < this.getScaleFactor()) { // increase sprite size
                 this.getSprite().setScaleX(this.getMinScale());
                 this.getSprite().setScaleY(this.getMinScale());
 
