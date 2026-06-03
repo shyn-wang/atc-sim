@@ -1,10 +1,19 @@
 package com.example.wangatc;
 
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Arc;
+import javafx.scene.shape.ArcType;
+import javafx.scene.paint.Color;
+
 public class DepartingPlane extends Plane {
     private Waypoint destination;
     private String color;
 
     private Runway takeoffRunway;
+
+    private int backlogTimer = 0;
+    private int maxBacklogTime = 1800; // ~30 seconds at 60 FPS
+    private Arc timerVisual;
 
     public DepartingPlane(int color) {
         super("ground", 0, 0);
@@ -15,6 +24,18 @@ public class DepartingPlane extends Plane {
         String[] possibleColors = {"blue", "green", "orange", "pink", "red", "yellow"};
         this.color = possibleColors[color];
         this.setSprite(Util.getDepartingPlaneSprite(color));
+
+        // initialize visual timer ring for backlogged planes
+        this.timerVisual = new Arc(0, 0, 32, 32, 90, 360);
+
+        this.timerVisual.setType(ArcType.OPEN);
+        this.timerVisual.setStroke(Color.RED);
+        this.timerVisual.setStrokeWidth(4);
+        this.timerVisual.setFill(Color.TRANSPARENT);
+
+        this.timerVisual.setVisible(false);
+
+        ((Pane) this.getSprite()).getChildren().add(this.timerVisual); // add timer visual to sprite group
     }
 
     public Waypoint getDestination() {
@@ -27,6 +48,33 @@ public class DepartingPlane extends Plane {
 
     public void setTakeoffRunway(Runway takeoffRunway) {
         this.takeoffRunway = takeoffRunway;
+    }
+
+
+    public boolean updateBacklogTimer() {
+        this.backlogTimer++;
+        this.timerVisual.setVisible(true);
+
+        // calculate remaining ratio (starts at 1.0, drops to 0.0)
+        double remainingRatio = 1.0 - ((double) backlogTimer / maxBacklogTime);
+
+        // update visual length of the arc (360 deg * ratio)
+        this.timerVisual.setLength(360 * remainingRatio);
+
+        // flash dark red when remaining time < 25%
+        if (remainingRatio < 0.25 && backlogTimer % 30 < 15) {
+            this.timerVisual.setStroke(Color.DARKRED);
+        } else {
+            this.timerVisual.setStroke(Color.RED);
+        }
+
+        // return true if the timer has run out
+        return this.backlogTimer >= maxBacklogTime;
+    }
+
+    public void resetBacklogTimer() {
+        this.backlogTimer = 0;
+        this.timerVisual.setVisible(false);
     }
 
     public void takeOff() {

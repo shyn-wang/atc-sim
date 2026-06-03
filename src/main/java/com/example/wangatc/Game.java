@@ -20,10 +20,10 @@ public class Game {
 
     private ArrayList<DepartingPlane> takeoffQueue; // includes all planes that must be placed on a runway
     private int maxTakeoffQueueSize;
-    private ArrayList<DepartingPlane> takeoffQueueBacklog;
+    private ArrayList<DepartingPlane> takeoffQueueBacklog; // max size -> 2
 
-    IntegerProperty score; // use javafx property wrapper to manage score
-    Label scoreLabel;
+    private IntegerProperty score; // use javafx property wrapper to manage score
+    private Label scoreLabel;
 
     private Plane selectedPlane = null; // tracks mouse selected plane
     private Line headingIndicator;
@@ -36,16 +36,19 @@ public class Game {
 
     private ArrayList<Waypoint> waypoints;
 
+    private boolean gameOver;
+
 
     public Game(Pane gameScreen) {
         this.gameScreen = gameScreen;
+        this.gameOver = false;
 
         this.allActivePlanes = new ArrayList<>();
         this.arrivingPlanes = new ArrayList<>();
         this.departingPlanes = new ArrayList<>();
 
         this.takeoffQueue = new ArrayList<>();
-        this.maxTakeoffQueueSize = 3;
+        this.maxTakeoffQueueSize = 4;
         this.takeoffQueueBacklog = new ArrayList<>();
 
         this.waypoints = new ArrayList<>();
@@ -78,7 +81,7 @@ public class Game {
         // initialize hotbar
         this.takeoffQueueHotbar = Util.initializeHotbar();
         this.gameScreen.getChildren().add(takeoffQueueHotbar);
-        Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue); // render empty slots
+        Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue, takeoffQueueBacklog); // render empty slots
 
         // initialize global mouse listeners
         setupGlobalMouseHandlers();
@@ -243,7 +246,7 @@ public class Game {
             this.takeoffQueueBacklog.add(plane);
         }
 
-        Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue);
+        Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue, takeoffQueueBacklog);
 
         // create corresponding waypoint
         Waypoint waypoint = new Waypoint(whichColor, waypoints);
@@ -282,7 +285,7 @@ public class Game {
                 runway01.setRunwayStartPointVisible(true);
                 runway02.setRunwayStartPointVisible(true);
 
-            } else if (!plane.getState().equals("taking off") && !plane.getState().equals("climb")) { // enable user guided navigation
+            } else if (!plane.getState().equals("taking off") && !plane.getState().equals("climb") && !plane.getState().equals("ground")) { // enable user guided navigation
                 selectedPlane = plane;
             }
 
@@ -329,7 +332,10 @@ public class Game {
                     takeoffQueue.remove(plane);
 
                     if (!takeoffQueueBacklog.isEmpty()) {
-                        takeoffQueue.add(takeoffQueueBacklog.remove(0));
+                        DepartingPlane promotedPlane = takeoffQueueBacklog.remove(0);
+                        promotedPlane.resetBacklogTimer(); // hide & stop timer for planes out of the backlog
+
+                        takeoffQueue.add(promotedPlane);
                     }
 
                 } else {
@@ -338,14 +344,19 @@ public class Game {
                 }
 
                 selectedPlane = null; // deselect plane
-                Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue); // refresh hotbar
+                Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue, takeoffQueueBacklog); // refresh hotbar
 
                 e.consume();
             }
         });
     }
 
-    public void manageAllActivePlanes() {
+    public void manageAllPlanes() {
+        if (gameOver) {
+
+        }
+
+
         ArrayList<Plane> planesToRemove = new ArrayList<>();
 
         if (selectedPlane != null) { // continuously update starting point of heading indicator to position of plane if selected
@@ -355,6 +366,7 @@ public class Game {
 
         runwayOccupied = false; // assume runway is unoccupied at start of each frame
 
+        // manage plane movement
         for (Plane plane : allActivePlanes) {
             plane.move();
 
@@ -371,6 +383,16 @@ public class Game {
                 if (plane.getState().equals("reached waypoint")) {
                     planesToRemove.add(plane);
                 }
+            }
+        }
+
+        // manage timer visuals
+        for (DepartingPlane backlogPlane : takeoffQueueBacklog) {
+            boolean timeUp = backlogPlane.updateBacklogTimer(); // only update timer for planes in backlog queue
+
+            if (timeUp) {
+                System.out.println("game over");
+                return; // break out immediately to halt game logic
             }
         }
 

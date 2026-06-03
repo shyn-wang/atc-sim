@@ -5,6 +5,7 @@ import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -181,7 +182,11 @@ public class Util { // use static variables & methods -> enables access in other
         clickTarget.setFill(Color.color(0, 0, 0, 0.01)); // use 0.01 opacity -> completely transparent cannot register clicks
 
         // combine into group container
-        Group sprite = new Group(imageNode, clickTarget);
+        Pane sprite = new Pane(imageNode, clickTarget);
+
+        sprite.setPrefSize(0, 0); // force 0x0 size -> center aircraft in slots
+        sprite.setMinSize(0, 0);
+        sprite.setMaxSize(0, 0);
 
         return sprite;
     }
@@ -214,7 +219,7 @@ public class Util { // use static variables & methods -> enables access in other
         return takeoffQueueHotbar;
     }
 
-    public static void updateTakeoffHotbarUI(HBox takeoffQueueHotbar, int maxTakeoffQueueSize, ArrayList<DepartingPlane> takeoffQueue) {
+    public static void updateTakeoffHotbarUI(HBox takeoffQueueHotbar, int maxTakeoffQueueSize, ArrayList<DepartingPlane> takeoffQueue, ArrayList<DepartingPlane> takeoffQueueBacklog) {
         takeoffQueueHotbar.getChildren().clear(); // clear existing slots
 
         for (int i = 0; i < maxTakeoffQueueSize; i++) { // create # of slots based on predefined max size
@@ -239,5 +244,20 @@ public class Util { // use static variables & methods -> enables access in other
 
             takeoffQueueHotbar.getChildren().add(slot); // add slot to hotbar
         }
+
+        // render any aircraft in backlog
+        for (Plane plane : takeoffQueueBacklog) {
+            StackPane slot = new StackPane();
+            slot.setPrefSize(80, 80);
+            slot.getStyleClass().add("slot");
+
+            plane.getSprite().setTranslateX(0); // set position relative to slot
+            plane.getSprite().setTranslateY(0);
+
+            slot.getChildren().add(plane.getSprite());
+
+            takeoffQueueHotbar.getChildren().add(slot); // add slot to hotbar
+        }
+
     }
 }

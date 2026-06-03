@@ -12,7 +12,7 @@ public class Plane {
     private double targetHeading;
 
     private double speed;
-    double turnRate = 0.2; // turn rate per frame
+    private double turnRate = 0.2; // turn rate per frame
 
     private Node sprite;
     private double minScale = 0.7;

@@ -31,7 +31,10 @@ public class Main extends Application {
 
         // test
         game.createNewArrivingPlane();
+        game.createNewArrivingPlane();
 
+        game.createNewDepartingPlane();
+        game.createNewDepartingPlane();
         game.createNewDepartingPlane();
         game.createNewDepartingPlane();
         game.createNewDepartingPlane();
@@ -64,7 +67,7 @@ public class Main extends Application {
 
         stage.setTitle("atc-sim");
         stage.setScene(scene);
-        // stage.setFullScreen(true);
+        stage.setFullScreen(true);
         stage.show();
 
         startGameLoop();
@@ -82,7 +85,7 @@ public class Main extends Application {
     }
 
     private void runGame() {
-        game.manageAllActivePlanes();
+        game.manageAllPlanes();
     }
 
     public static void main(String[] args) {
