@@ -29,16 +29,6 @@ public class Main extends Application {
 
         game = new Game(gameScreen); // create game object
 
-        // test
-        game.createNewArrivingPlane();
-        game.createNewArrivingPlane();
-
-        game.createNewDepartingPlane();
-        game.createNewDepartingPlane();
-        game.createNewDepartingPlane();
-        game.createNewDepartingPlane();
-        game.createNewDepartingPlane();
-
         // assign css tag
         gameScreen.getStyleClass().add("background");
 
@@ -82,6 +72,7 @@ public class Main extends Application {
         };
 
         gameLoop.start(); // initiate animation loop
+        game.createNewDepartingPlane(); // start with one departing aircraft
     }
 
     private void runGame() {

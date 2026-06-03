@@ -38,6 +38,11 @@ public class Game {
 
     private boolean gameOver;
 
+    private int framesSinceLastSpawn = 0;
+    private int currentSpawnInterval = 800;
+    private int minSpawnInterval = 120; // max difficulty -> 1 plane every 2 seconds
+    private int difficultyScaling = 3; //
+
 
     public Game(Pane gameScreen) {
         this.gameScreen = gameScreen;
@@ -351,9 +356,37 @@ public class Game {
         });
     }
 
+    public void spawnNewAircraft() {
+        framesSinceLastSpawn++;
+
+        // When enough frames have passed, spawn a new plane
+        if (framesSinceLastSpawn >= currentSpawnInterval) {
+            framesSinceLastSpawn = 0; // Reset timer
+
+            int arrivingOrDeparting = (int) (Math.random() * (2 - 1 + 1)) + 1; // random 1-2 -> 50% chance for departing or arriving plane
+
+            if (arrivingOrDeparting == 1) {
+                createNewArrivingPlane();
+            } else {
+                if (takeoffQueueBacklog.size() == 2) { // do not create new departing planes if backlog is full (2 planes)
+                    return;
+                } else {
+                    createNewDepartingPlane();
+                }
+            }
+
+            // increase difficulty
+            if (currentSpawnInterval > minSpawnInterval) {
+                currentSpawnInterval -= difficultyScaling;
+            }
+        }
+    }
+
     public void manageAllPlanes() {
         if (gameOver) {
 
+        } else {
+            spawnNewAircraft();
         }
 
 
