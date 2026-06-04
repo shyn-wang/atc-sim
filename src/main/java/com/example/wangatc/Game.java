@@ -41,12 +41,16 @@ public class Game {
     private int framesSinceLastSpawn = 0;
     private int currentSpawnInterval = 800;
     private int minSpawnInterval = 120; // max difficulty -> 1 plane every 2 seconds
-    private int difficultyScaling = 3; //
+    private int difficultyScaling = 3;
 
 
-    public Game(Pane gameScreen) {
+    private Runnable onGameOverCallback;
+
+
+    public Game(Pane gameScreen, Runnable onGameOverCallback) {
         this.gameScreen = gameScreen;
         this.gameOver = false;
+        this.onGameOverCallback = onGameOverCallback;
 
         this.allActivePlanes = new ArrayList<>();
         this.arrivingPlanes = new ArrayList<>();
@@ -97,6 +101,9 @@ public class Game {
         return runwayOccupied;
     }
 
+    public int getScore() {
+        return score.get();
+    }
 
     private void setupGlobalMouseHandlers() {
         // global action listener for dragging mouse across screen
@@ -425,6 +432,10 @@ public class Game {
 
             if (timeUp) {
                 System.out.println("game over");
+
+                // trigger callback to main.java to show the game over screen
+                onGameOverCallback.run();
+
                 return; // break out immediately to halt game logic
             }
         }
