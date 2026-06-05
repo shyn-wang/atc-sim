@@ -24,11 +24,14 @@
 }
 
 .button {
-    -fx-background-color: #B12BF7;
+    -fx-background-color: rgba(177, 43, 247, 0.5);
+    -fx-border-color: #B12BF7;
+    -fx-border-width: 2px;
+    -fx-border-radius: 30px;
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-font-size: 32px;
-    -fx-background-radius: 15px;
+    -fx-background-radius: 30px;
     -fx-padding: 10 40 10 40;
 }
 

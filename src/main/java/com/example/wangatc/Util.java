@@ -11,7 +11,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
+import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Util { // use static variables & methods -> enables access in other classes without creating a util object
     public static int screenWidth = 1920;
@@ -27,6 +31,133 @@ public class Util { // use static variables & methods -> enables access in other
     private static Image departingPlaneImagePink = new Image(Util.class.getResourceAsStream("/images/planePink.png"));
     private static Image departingPlaneImageRed = new Image(Util.class.getResourceAsStream("/images/planeRed.png"));
     private static Image departingPlaneImageYellow = new Image(Util.class.getResourceAsStream("/images/planeYellow.png"));
+
+    // FILE HANDLERS
+
+    public static void saveData(ArrayList<String[]> highScores, int finalScore) {
+        String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE); // get date
+
+        if (highScores.size() < 10) {
+            highScores.add(new String[] {date, String.valueOf(finalScore)}); // add all new scores if list is not full (less than 10 recorded scores)
+
+        } else { // list is full -> only add new top scores
+            int minScore = Integer.parseInt(highScores.getLast()[1]); // check last score for min score (sorted)
+
+            if (finalScore >= minScore) {
+                highScores.remove(highScores.getLast());
+                highScores.add(new String[] {date, String.valueOf(finalScore)}); // replace min score with new score
+            }
+        }
+
+        // re-sort list
+        String[][] temp = highScores.toArray(new String[0][]); // convert arraylist to array
+        mergeSort(temp);
+
+        highScores.clear(); // empty arraylist
+        Collections.addAll(highScores, temp); // re-add sorted scores to arraylist
+
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("scores.txt"))) {
+            for (String[] score : highScores) { // copy all score info into scores.txt
+                bw.write(score[0]); // date
+                bw.write("|"); // separate by |
+
+                bw.write(score[1]); // score
+                bw.write("|");
+
+                bw.newLine();
+            }
+        } catch (IOException _) {
+
+        }
+    }
+
+    public static void reloadData(ArrayList<String[]> highScores) {
+        String line;
+
+        try (BufferedReader br = new BufferedReader(new FileReader("scores.txt"))) { // read file contents
+            while ((line = br.readLine()) != null) { // parse each line in file containing data
+                String[] score = line.split("\\|"); // splits line using | as the delimiter; stores individual score info in String[] array
+
+                if (score.length == 2) { // ignore empty lines (will produce an array of length 1 with an empty string)
+                    highScores.add(score);
+                }
+            }
+
+        } catch (Exception _) {
+
+        }
+    }
+
+    /*
+    description: recursively splits an array into halves until each element is its own array of length 1; calls merge to combine arrays in order
+    pre-condition: inputArray is a valid String[][] array
+    post-condition: inputArray is sorted in descending order
+    */
+    private static void mergeSort(String[][] inputArray) {
+        int length = inputArray.length;
+
+        if (length <= 1) {
+            return; // array is sorted if contains only one element
+        } else {
+            int mid = length / 2;
+            String[][] left = new String[mid][]; // create new array to store left half elements of inputArray
+            String[][] right = new String[length - mid][]; // create new array to store right half elements of inputArray
+
+            for (int i = 0; i < mid; i++) {
+                left[i] = inputArray[i]; // fill left half array
+            }
+
+            for (int i = mid; i < length; i++) {
+                right[i - mid] = inputArray[i]; // fill right half array
+            }
+
+            mergeSort(left); // recursively call mergeSort to continue splitting left half array in a deeper call stack layer
+            mergeSort(right); // recursively call mergeSort to continue splitting right half array in a deeper call stack layer
+            merge(inputArray, left, right); // merge left and right half arrays (starting from deepest layer in call stack)
+        }
+    }
+
+    /*
+    description: merge the elements of two arrays into one array in either ascending or descending order
+    pre-condition: input, left, and right are valid String[][] arrays; mergeAscend is defined
+    post-condition: modifies contents of input to be in descending order
+    */
+    private static void merge(String[][] input, String[][] left, String[][] right) {
+        int leftSize = left.length;
+        int rightSize = right.length;
+
+        // i represents index position in left array, j represents index position in right array, k represents index position in merged array
+        int i = 0, j = 0, k = 0;
+
+        while (i < leftSize && j < rightSize) {
+            // get scores
+            int leftScore = Integer.parseInt(left[i][1]);
+            int rightScore = Integer.parseInt(right[j][1]);
+
+            if (leftScore >= rightScore) { // merge greatest to least (descending)
+                input[k] = left[i];
+                i++;
+            } else {
+                input[k] = right[j];
+                j++;
+            }
+
+            k++; // move to next element in merged array
+        }
+
+        while (i < leftSize) { // only runs if left array has remaining elements
+            input[k] = left[i]; // adds remaining elements directly to merged array; elements are already sorted
+            i++;
+            k++;
+        }
+
+        while (j < rightSize) { // only runs if right array has remaining elements
+            input[k] = right[j]; // adds remaining elements directly to merged array; elements are already sorted
+            j++;
+            k++;
+        }
+    }
 
 
     // LOGIC METHODS

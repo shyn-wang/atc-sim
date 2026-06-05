@@ -2,10 +2,12 @@ package com.example.wangatc;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -14,11 +16,15 @@ import javafx.scene.transform.Scale;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+
 public class Main extends Application {
     private Game game;
 
     private StackPane scaledContainer;
     private AnimationTimer gameLoop;
+
+    private ArrayList<String[]> highScores;
 
     @Override
     public void start(Stage stage) {
@@ -68,7 +74,7 @@ public class Main extends Application {
         Label title = new Label("mini airways");
         title.setStyle("-fx-font-size: 72px; -fx-text-fill: white; -fx-font-weight: bold;");
 
-        Label description = new Label("(java remake)");
+        Label description = new Label("java remake");
         description.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
 
         // group text fields together with 5px spacing
@@ -80,10 +86,81 @@ public class Main extends Application {
         startBtn.getStyleClass().add("button");
         startBtn.setOnAction(e -> startGame()); // start game on press
 
-        mainMenu.getChildren().addAll(textGroup, startBtn);
+        Button scoreListBtn = new Button("scores");
+        scoreListBtn.getStyleClass().add("button");
+        scoreListBtn.setOnAction(e -> showScoreScreen());
+
+        VBox buttonGroup = new VBox(25);
+        buttonGroup.setAlignment(Pos.CENTER);
+        buttonGroup.getChildren().addAll(startBtn, scoreListBtn);
+
+        mainMenu.getChildren().addAll(textGroup, buttonGroup);
 
         // setAll -> show only main menu
         scaledContainer.getChildren().setAll(mainMenu);
+    }
+
+    private void showScoreScreen() {
+        VBox scoreList = new VBox(100);
+        scoreList.setAlignment(Pos.CENTER);
+        scoreList.getStyleClass().add("background");
+
+        Label title = new Label("top scores");
+        title.setStyle("-fx-font-size: 60px; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        // use grid layout for tabular display
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(60); // horizontal spacing between columns
+        grid.setVgap(15); // vertical spacing between rows
+
+        // setup headers
+        String headerStyle = "-fx-font-size: 28px; -fx-text-fill: #ffcc00; -fx-font-weight: bold;";
+        Label rankHeader = new Label("rank");
+        Label dateHeader = new Label("date");
+        Label scoreHeader = new Label("score");
+
+        rankHeader.setStyle(headerStyle);
+        scoreHeader.setStyle(headerStyle);
+        dateHeader.setStyle(headerStyle);
+
+        grid.addRow(0, rankHeader, dateHeader, scoreHeader); // create row for headers
+
+        // fetch scores from file
+        highScores = new ArrayList<>();
+        Util.reloadData(highScores);
+
+        if (highScores.isEmpty()) {
+            Label noScores = new Label("no scores recorded yet!");
+            noScores.setStyle("-fx-font-size: 24px; -fx-text-fill: #aaaaaa;");
+
+            grid.add(noScores, 0, 1, 3, 1);
+            GridPane.setHalignment(noScores, HPos.CENTER);
+
+        } else {
+            String rowStyle = "-fx-font-size: 24px; -fx-text-fill: white;";
+            for (int i = 0; i < highScores.size(); i++) {
+                String[] score = highScores.get(i);
+
+                Label rankLbl = new Label("#" + (i + 1));
+                Label dateLbl = new Label(score[0]);
+                Label scoreLbl = new Label(score[1]);
+
+                rankLbl.setStyle(rowStyle);
+                scoreLbl.setStyle(rowStyle);
+                dateLbl.setStyle(rowStyle);
+
+                // add to row (i + 1 -> row 0 is headers)
+                grid.addRow(i + 1, rankLbl, dateLbl, scoreLbl);
+            }
+        }
+
+        Button backBtn = new Button("back");
+        backBtn.getStyleClass().add("button");
+        backBtn.setOnAction(e -> showMainMenu());
+
+        scoreList.getChildren().addAll(title, grid, backBtn);
+        scaledContainer.getChildren().setAll(scoreList);
     }
 
     private void startGame() {
@@ -113,6 +190,12 @@ public class Main extends Application {
             gameLoop.stop(); // freeze game screen as is in background
         }
 
+        // check for high score & save scores
+        highScores = new ArrayList<>(); // fetch existing scores from file
+        Util.reloadData(highScores);
+        Util.saveData(highScores, finalScore);
+
+        // UI
         VBox gameOverMenu = new VBox(150);
         gameOverMenu.setAlignment(Pos.CENTER);
         gameOverMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.65);"); // semi-transparent dark overlay
