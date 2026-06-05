@@ -1,3 +1,10 @@
+/*
+description: plane class
+@author: david wang
+@date: jun. 5. 26
+@version: 1.0
+*/
+
 package com.example.wangatc;
 
 import javafx.scene.Node;
@@ -6,7 +13,7 @@ public class Plane {
     private double x;
     private double y;
 
-    private String state; // "airborne," "targetingMouse," "targetingWaypoint," "targetingRunway," "landing," "takingOff," "inTakeoffQueue"
+    private String state;
 
     private double currentHeading;
     private double targetHeading;
@@ -18,6 +25,12 @@ public class Plane {
     private double minScale = 0.7;
     private double scaleFactor = 1;
 
+
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public Plane(String state, double x, double y) {
         this.state = state;
         this.x = x;

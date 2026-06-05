@@ -1,3 +1,10 @@
+/*
+description: main class
+@author: david wang
+@date: jun. 5. 26
+@version: 1.0
+*/
+
 package com.example.wangatc;
 
 import javafx.animation.AnimationTimer;
@@ -26,6 +33,12 @@ public class Main extends Application {
 
     private ArrayList<String[]> highScores;
 
+
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     @Override
     public void start(Stage stage) {
         // create central container to store different screens
@@ -60,12 +73,17 @@ public class Main extends Application {
         scene.getStylesheets().add(css);
 
         stage.setScene(scene);
-        // stage.setFullScreen(true);
+        stage.setFullScreen(true);
         stage.show();
 
         showMainMenu(); // initially render main menu
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     private void showMainMenu() {
         VBox mainMenu = new VBox(500); // 500px spacing between elements/groups in mainmenu vbox
         mainMenu.setAlignment(Pos.CENTER);
@@ -90,9 +108,13 @@ public class Main extends Application {
         scoreListBtn.getStyleClass().add("button");
         scoreListBtn.setOnAction(e -> showScoreScreen());
 
+        Button quitButton = new Button("quit");
+        quitButton.getStyleClass().add("button");
+        quitButton.setOnAction(e -> {System.exit(0);});
+
         VBox buttonGroup = new VBox(25);
         buttonGroup.setAlignment(Pos.CENTER);
-        buttonGroup.getChildren().addAll(startBtn, scoreListBtn);
+        buttonGroup.getChildren().addAll(startBtn, scoreListBtn, quitButton);
 
         mainMenu.getChildren().addAll(textGroup, buttonGroup);
 
@@ -100,6 +122,11 @@ public class Main extends Application {
         scaledContainer.getChildren().setAll(mainMenu);
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     private void showScoreScreen() {
         VBox scoreList = new VBox(100);
         scoreList.setAlignment(Pos.CENTER);
@@ -163,6 +190,11 @@ public class Main extends Application {
         scaledContainer.getChildren().setAll(scoreList);
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     private void startGame() {
         Pane gameScreen = new Pane(); // create pane for game contents
         gameScreen.setPrefSize(Util.screenWidth, Util.screenHeight);
@@ -172,7 +204,7 @@ public class Main extends Application {
         scaledContainer.getChildren().setAll(gameScreen);
 
         // create new game object every time a new game is started
-        game = new Game(gameScreen, () -> showGameOver(game.getScore())); // give game object callback to game over method in main -> runs when game is over
+        game = new Game(gameScreen, () -> showGameOver(game.getScore(), game.getReasonForLoss())); // give game object callback to game over method in main -> runs when game is over
 
         gameLoop = new AnimationTimer() { // run game
             @Override
@@ -185,10 +217,13 @@ public class Main extends Application {
         game.createNewDepartingPlane(); // start with one departing aircraft
     }
 
-    private void showGameOver(int finalScore) {
-        if (gameLoop != null) {
-            gameLoop.stop(); // freeze game screen as is in background
-        }
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
+    private void showGameOver(int finalScore, String reasonForLoss) {
+        gameLoop.stop(); // freeze game screen as is in background
 
         // check for high score & save scores
         highScores = new ArrayList<>(); // fetch existing scores from file
@@ -206,9 +241,12 @@ public class Main extends Application {
         Label scoreLabel = new Label("score: " + finalScore);
         scoreLabel.setStyle("-fx-font-size: 48px; -fx-text-fill: white;");
 
+        Label description = new Label(reasonForLoss);
+        description.setStyle("-fx-font-size: 24px; -fx-text-fill: white;");
+
         VBox textGroup = new VBox(5);
         textGroup.setAlignment(Pos.CENTER);
-        textGroup.getChildren().addAll(title, scoreLabel);
+        textGroup.getChildren().addAll(title, scoreLabel, description);
 
         Button restartBtn = new Button("new game");
         restartBtn.getStyleClass().add("button");
@@ -228,6 +266,11 @@ public class Main extends Application {
         scaledContainer.getChildren().add(gameOverMenu);
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public static void main(String[] args) {
         launch(args);
     }

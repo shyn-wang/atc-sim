@@ -1,8 +1,21 @@
+/*
+description: arriving plane class
+@author: david wang
+@date: jun. 5. 26
+@version: 1.0
+*/
+
 package com.example.wangatc;
 
 public class ArrivingPlane extends Plane {
     private Runway targetRunway;
 
+
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public ArrivingPlane() {
         super("airborne", 0, 0);
 
@@ -28,6 +41,7 @@ public class ArrivingPlane extends Plane {
         this.getSprite().setRotate(initialHeading + 90); // add 90 -> sprite drawn facing upwards
     }
 
+   // getters & setters
     public void setTargetRunway(Runway runway) {
         this.targetRunway = runway;
     }
@@ -36,6 +50,11 @@ public class ArrivingPlane extends Plane {
         return this.targetRunway;
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public void approachAndLand() {
         // phase 1 -> intercept runway centerline by tracing a tractrix curve
         if (this.getState().equals("targeting runway")) {
@@ -96,6 +115,11 @@ public class ArrivingPlane extends Plane {
         }
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     @Override
     public void move() {
         if (!this.getState().equals("airborne")) {

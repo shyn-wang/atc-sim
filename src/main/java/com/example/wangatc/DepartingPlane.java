@@ -1,3 +1,10 @@
+/*
+description: departing plane class
+@author: david wang
+@date: jun. 5. 26
+@version: 1.0
+*/
+
 package com.example.wangatc;
 
 import javafx.scene.layout.Pane;
@@ -15,6 +22,12 @@ public class DepartingPlane extends Plane {
     private int maxBacklogTime = 1800; // ~30 seconds at 60 FPS
     private Arc timerVisual;
 
+
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public DepartingPlane(int color) {
         super("ground", 0, 0);
 
@@ -38,6 +51,7 @@ public class DepartingPlane extends Plane {
         ((Pane) this.getSprite()).getChildren().add(this.timerVisual); // add timer visual to sprite group
     }
 
+    // getters & setters
     public Waypoint getDestination() {
         return destination;
     }
@@ -50,7 +64,11 @@ public class DepartingPlane extends Plane {
         this.takeoffRunway = takeoffRunway;
     }
 
-
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public boolean updateBacklogTimer() {
         this.backlogTimer++;
         this.timerVisual.setVisible(true);
@@ -72,11 +90,21 @@ public class DepartingPlane extends Plane {
         return this.backlogTimer >= maxBacklogTime;
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public void resetBacklogTimer() {
         this.backlogTimer = 0;
         this.timerVisual.setVisible(false);
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public void takeOff() {
         if (this.getState().equals("taking off")) {
             if (Math.hypot(this.getX() - takeoffRunway.getEndX(), this.getY() - takeoffRunway.getEndY()) < 50.0) { // distance to end of runway
@@ -100,6 +128,11 @@ public class DepartingPlane extends Plane {
         }
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public void navigateToWaypoint() {
         double targetX = this.destination.getX();
         double targetY = this.destination.getY();
@@ -113,6 +146,11 @@ public class DepartingPlane extends Plane {
         }
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     @Override
     public void move() {
         if (this.getState().equals("taking off") || this.getState().equals("climb")) {

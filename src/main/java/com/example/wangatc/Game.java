@@ -1,3 +1,10 @@
+/*
+description: game class
+@author: david wang
+@date: jun. 5. 26
+@version: 1.0
+*/
+
 package com.example.wangatc;
 
 import javafx.beans.property.IntegerProperty;
@@ -36,7 +43,7 @@ public class Game {
 
     private ArrayList<Waypoint> waypoints;
 
-    private boolean gameOver;
+    private String reasonForLoss;
 
     private int framesSinceLastSpawn = 0;
     private int currentSpawnInterval = 800;
@@ -47,9 +54,13 @@ public class Game {
     private Runnable onGameOverCallback;
 
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public Game(Pane gameScreen, Runnable onGameOverCallback) {
         this.gameScreen = gameScreen;
-        this.gameOver = false;
         this.onGameOverCallback = onGameOverCallback;
 
         this.allActivePlanes = new ArrayList<>();
@@ -57,7 +68,7 @@ public class Game {
         this.departingPlanes = new ArrayList<>();
 
         this.takeoffQueue = new ArrayList<>();
-        this.maxTakeoffQueueSize = 4;
+        this.maxTakeoffQueueSize = 3;
         this.takeoffQueueBacklog = new ArrayList<>();
 
         this.waypoints = new ArrayList<>();
@@ -96,7 +107,7 @@ public class Game {
         setupGlobalMouseHandlers();
     }
 
-
+    // getters & setters
     public boolean isRunwayOccupied() {
         return runwayOccupied;
     }
@@ -105,6 +116,15 @@ public class Game {
         return score.get();
     }
 
+    public String getReasonForLoss() {
+        return reasonForLoss;
+    }
+
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     private void setupGlobalMouseHandlers() {
         // global action listener for dragging mouse across screen
         this.gameScreen.setOnMouseDragged(e -> {
@@ -224,7 +244,11 @@ public class Game {
         });
     }
 
-
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public void createNewArrivingPlane() {
         ArrivingPlane plane = new ArrivingPlane();
 
@@ -245,7 +269,11 @@ public class Game {
         this.gameScreen.getChildren().add(plane.getSprite()); // add sprite to scene
     }
 
-
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public void createNewDepartingPlane() {
         // create plane
         int whichColor = (int) (Math.random() * (6)); // random 0-5
@@ -363,6 +391,11 @@ public class Game {
         });
     }
 
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
     public void spawnNewAircraft() {
         framesSinceLastSpawn++;
 
@@ -371,6 +404,23 @@ public class Game {
             framesSinceLastSpawn = 0; // Reset timer
 
             int arrivingOrDeparting = (int) (Math.random() * (2 - 1 + 1)) + 1; // random 1-2 -> 50% chance for departing or arriving plane
+
+            if (score.intValue() < 25) {
+                if (arrivingPlanes.size() - (takeoffQueue.size() + departingPlanes.size()) >= 2) {
+                    arrivingOrDeparting = 2; // try spawning departing plane
+
+                } else if ((takeoffQueue.size() + departingPlanes.size()) - arrivingPlanes.size() >= 2) {
+                    arrivingOrDeparting = 1; // try spawning arriving plane
+                }
+
+            } else { // >= 25
+                if (arrivingPlanes.size() - (takeoffQueue.size() + departingPlanes.size()) >= 3) {
+                    arrivingOrDeparting = 2; // spawn departing plane
+
+                } else if ((takeoffQueue.size() + departingPlanes.size()) - arrivingPlanes.size() >= 3) {
+                    arrivingOrDeparting = 1; // spawn arriving plane
+                }
+            }
 
             if (arrivingOrDeparting == 1) {
                 createNewArrivingPlane();
@@ -389,12 +439,74 @@ public class Game {
         }
     }
 
-    public void manageAllPlanes() {
-        if (gameOver) {
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
+    public boolean checkGameOver() {
+        double boundary = 30.0;
+        double baseRadius = 20.0;
 
-        } else {
-            spawnNewAircraft();
+        for (int i = 0; i < allActivePlanes.size(); i++) {
+            Plane p1 = allActivePlanes.get(i);
+
+            // 1. check for out of bounds aircraft
+            double radians = Math.toRadians(p1.getCurrentHeading());  // determine direction the plane is currently flying
+            double vx = Math.cos(radians);
+            double vy = Math.sin(radians);
+
+            // plane is lost if it is beyond a boundary AND its velocity is carrying it further away (just spawned arriving planes will not trigger game over)
+            boolean lostLeft   = (p1.getX() < -boundary) && (vx < 0);
+            boolean lostRight  = (p1.getX() > Util.screenWidth + boundary) && (vx > 0);
+            boolean lostTop    = (p1.getY() < -boundary) && (vy < 0);
+            boolean lostBottom = (p1.getY() > Util.screenHeight + boundary) && (vy > 0);
+
+            if (lostLeft || lostRight || lostTop || lostBottom) {
+                this.reasonForLoss = "a plane flew out of the airspace!";
+                return true;
+            }
+
+            // 2. check for collisions between aircraft
+            for (int j = i + 1; j < allActivePlanes.size(); j++) {
+                Plane p2 = allActivePlanes.get(j);
+
+                double p1Scale = p1.getSprite().getScaleX();
+                double p2Scale = p2.getSprite().getScaleX();
+
+                // altitude separation check (> 0.15 scale difference -> aircraft fly over each other)
+                if (Math.abs(p1Scale - p2Scale) > 0.15) {
+                    continue;
+                }
+
+                // implement dynamic hitbox size based on scale
+                double dynamicThreshold = (baseRadius * p1Scale) + (baseRadius * p2Scale);
+                double distance = Math.hypot(p1.getX() - p2.getX(), p1.getY() - p2.getY());
+
+                if (distance < dynamicThreshold) { // collision
+                    boolean p1OnRunway = p1.getState().equals("landing") || p1.getState().equals("taking off");
+                    boolean p2OnRunway = p2.getState().equals("landing") || p2.getState().equals("taking off");
+
+                    if (p1OnRunway || p2OnRunway) {
+                        this.reasonForLoss = "runway incursion!";
+                    } else {
+                        this.reasonForLoss = "mid-air collision!";
+                    }
+                    return true;
+                }
+            }
+
         }
+        return false;
+    }
+
+    /*
+    description:
+    pre-condition:
+    post-condition:
+    */
+    public void manageAllPlanes() {
+        spawnNewAircraft();
 
 
         ArrayList<Plane> planesToRemove = new ArrayList<>();
@@ -426,12 +538,17 @@ public class Game {
             }
         }
 
-        // manage timer visuals
+        if (checkGameOver()) {
+            onGameOverCallback.run();
+            return;
+        }
+
+        // manage timer visuals & game over via backlog overflow
         for (DepartingPlane backlogPlane : takeoffQueueBacklog) {
             boolean timeUp = backlogPlane.updateBacklogTimer(); // only update timer for planes in backlog queue
 
             if (timeUp) {
-                System.out.println("game over");
+                this.reasonForLoss = "departing plane backlog overflowed!";
 
                 // trigger callback to main.java to show the game over screen
                 onGameOverCallback.run();
