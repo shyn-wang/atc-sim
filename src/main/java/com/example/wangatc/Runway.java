@@ -26,6 +26,11 @@ public class Runway {
     private double localizerInterceptX;
     private double localizerInterceptY;
 
+    /*
+    description: constructor for Runway  objects
+    pre-condition: valid arguments
+    post-condition: initializes instance variables
+    */
     public Runway(double startX, double startY, double endX, double endY) {
         this.startX = startX;
         this.startY = startY;
@@ -33,20 +38,22 @@ public class Runway {
         this.endX = endX;
         this.endY = endY;
 
-        runwayStartPoint = new Circle(startX, startY, 5);
+        runwayStartPoint = new Circle(startX, startY, 5); // create visual indicator for start point
         runwayStartPoint.setFill(Color.rgb(255, 214, 243));
         runwayStartPoint.setVisible(false); // initially hidden
 
-        // calculate runway heading
+        // calculate runway heading based on start/end points
         double[] p1 = {startX, startY};
         double[] p2 = {endX, endY};
         this.heading = Util.getHeadingTo(p1, p2);
 
-        // calculate localizer position (70px behind runway start) -> point at which planes should be flying on runway heading
+        // calculate localizer position (70px behind runway start) -> point at which arriving planes should be flying on runway heading
         double radians = Math.toRadians(heading);
         this.localizerInterceptX = startX - (70 * Math.cos(radians)); // x component
         this.localizerInterceptY = startY - (70 * Math.sin(radians)); // y component
     }
+
+    // getters & setters
 
     public Circle getRunwayStartPoint() {
         return this.runwayStartPoint;
@@ -73,40 +80,66 @@ public class Runway {
         return this.endY;
     }
 
+
     public double getHeading() {
         return heading;
     }
 
-
-    public boolean isApproachAngleValid(double[] planePos) { // check if plane is able to intercept the localizer on runway heading
-        double angleToLocalizer = Util.getHeadingTo(planePos, new double[] {this.localizerInterceptX, this.localizerInterceptY});
+    /*
+    description: determines if an arriving aircraft is able to initiate automated approach & landing based on current position/heading & required heading relative to runway
+    pre-condition: plane is a valid plane
+    post-condition: returns true or false
+    */
+    public boolean isApproachAngleValid(Plane plane) { // check if plane is able to intercept the localizer on runway heading
+        double[] planePos = {plane.getX(), plane.getY()};
+        double angleToLocalizer = Util.getHeadingTo(planePos, new double[]{this.localizerInterceptX, this.localizerInterceptY});
         double runwayHeading = this.getHeading();
 
-        // compare angle between plane & localizer to runway heading
-        double diff = Math.abs(angleToLocalizer - runwayHeading);
-        while (diff > 180) {
-            diff -= 360; // normalize to 0-180
-        }
-        diff = Math.abs(diff);
+        // 1. calculate position difference (via angle) between plane & runway -> is the plane physically in the approach cone?
+        double positionDiff = angleToLocalizer - runwayHeading; // angle plane makes with localizer from current position - runway angle
 
+        while (positionDiff < -180) { // normalize to between -180 to 180
+            positionDiff += 360;
+        }
+        while (positionDiff > 180) {
+            positionDiff -= 360;
+        }
+
+        positionDiff = Math.abs(positionDiff);
+
+        // 2. calculate heading difference between plane & runway -> is the plane facing the general direction of the runway?
+        double headingDiff = plane.getCurrentHeading() - runwayHeading;
+
+        while (headingDiff < -180) {
+            headingDiff += 360;
+        }
+        while (headingDiff > 180) {
+            headingDiff -= 360;
+        }
+
+        headingDiff = Math.abs(headingDiff);
+
+        // calculate distance to runway
         double distance = Math.hypot(planePos[0] - this.localizerInterceptX, planePos[1] - this.localizerInterceptY); // get distance to localizer intercept
 
-        // determine if an approach is valid based on angle difference & distance -> does the plane have sufficient distance to make up the angle difference?
-        if (distance < 150) {
-            return diff < 8; // when the plane is within 150px of the localizer intercept, approaches will only be permitted when the angle difference is less than 8 deg
+        // determine if an approach is valid based on position difference & heading difference relative to distance -> does the plane have sufficient distance to make up the position & heading difference?
+        if (distance < 150) { // requirements become more forgiving as distance increases
+            return positionDiff < 8 && headingDiff < 15; // very close -> must be practically on the centerline and facing the runway
 
-        } else if (distance < 300) {
-            return diff < 20;
+        } else if (distance < 250) {
+            return positionDiff < 14 && headingDiff < 30;
+
+        } else if (distance < 350) {
+            return positionDiff < 20 && headingDiff < 45;
 
         } else if (distance < 500) {
-            return diff < 40;
+            return positionDiff < 40 && headingDiff < 70;
 
         } else if (distance < 600) {
-            return diff < 55;
+            return positionDiff < 55 && headingDiff < 85;
 
         } else {
-            return diff < 65;
-
+            return positionDiff < 65 && headingDiff < 100;
         }
     }
 }

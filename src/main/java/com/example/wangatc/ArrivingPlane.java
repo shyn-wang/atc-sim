@@ -12,12 +12,12 @@ public class ArrivingPlane extends Plane {
 
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: constructor for ArrivingPlane objects
+    pre-condition: none
+    post-condition: initializes instance variables
     */
     public ArrivingPlane() {
-        super("airborne", 0, 0);
+        super("airborne", 0, 0); // initialize inherited properties
 
         int[] spawnPosition = Util.generateRandomSpawnPoint();
         this.setX(spawnPosition[0]);
@@ -25,7 +25,7 @@ public class ArrivingPlane extends Plane {
 
         // point plane towards center of screen
         double[] p1 = {this.getX(), this.getY()};
-        double[] p2 = {(double) Util.screenWidth / 2, (double) Util.screenHeight / 2};
+        double[] p2 = {(double) Util.screenWidth / 2, (double) Util.screenHeight / 2}; // center of screen
 
         double initialHeading = Util.getHeadingTo(p1, p2);
 
@@ -51,9 +51,9 @@ public class ArrivingPlane extends Plane {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: guides aircraft onto runway centerline & performs landing
+    pre-condition: none
+    post-condition: updates aircraft targetHeading, x/y position to navigate towards runway
     */
     public void approachAndLand() {
         // phase 1 -> intercept runway centerline by tracing a tractrix curve
@@ -68,7 +68,7 @@ public class ArrivingPlane extends Plane {
             // dot product to find how far back the plane is along the extended centerline
             double distanceAlongCenterline = ((this.getX() - sx) * backwardX) + ((this.getY() - sy) * backwardY);
 
-            // if the plane has crossed the 70 px mark, transition to final approach
+            // if the plane has crossed the 70 px mark, transition to final approach phase
             if (distanceAlongCenterline <= 70.0) {
                 this.setState("final approach");
 
@@ -78,7 +78,7 @@ public class ArrivingPlane extends Plane {
                 double carrotX = sx + (carrotDistance * backwardX);
                 double carrotY = sy + (carrotDistance * backwardY);
 
-                this.setTargetHeading(Util.getHeadingTo(new double[] {this.getX(), this.getY()}, new double[] {carrotX, carrotY})); // continuously target carrot
+                this.setTargetHeading(Util.getHeadingTo(new double[] {this.getX(), this.getY()}, new double[] {carrotX, carrotY})); // continuously target carrot position
             }
         }
         // phase 2 -> final approach
@@ -86,7 +86,7 @@ public class ArrivingPlane extends Plane {
             double sx = targetRunway.getStartX();
             double sy = targetRunway.getStartY();
 
-            if (this.getScaleFactor() > this.getMinScale()) {
+            if (this.getScaleFactor() > this.getMinScale()) { // shrink aircraft sprite (aircraft descends)
                 this.getSprite().setScaleX(this.getScaleFactor());
                 this.getSprite().setScaleY(this.getScaleFactor());
 
@@ -99,14 +99,14 @@ public class ArrivingPlane extends Plane {
             if (Math.hypot(this.getX() - sx, this.getY() - sy) < 1.0) { // distance to runway start < 1 px
                 this.setState("landing");
 
-                this.setX(sx);
+                this.setX(sx); // snap to runway
                 this.setY(sy);
                 this.setSpeed(0.2); // apply brakes
             }
         }
         // phase 3 -> landing roll
         else if (this.getState().equals("landing")) {
-            this.setCurrentHeading(targetRunway.getHeading());
+            this.setCurrentHeading(targetRunway.getHeading()); // snap to runway heading
             this.setTargetHeading(targetRunway.getHeading());
 
             if (Math.hypot(this.getX() - targetRunway.getEndX(), this.getY() - targetRunway.getEndY()) < 30.0) { // distance to end
@@ -116,16 +116,16 @@ public class ArrivingPlane extends Plane {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: overrides Plane move method
+    pre-condition: none
+    post-condition: updates arriving aircraft heading & position
     */
     @Override
     public void move() {
-        if (!this.getState().equals("airborne")) {
-            this.approachAndLand();
+        if (!this.getState().equals("airborne")) { // state other than 'airborne' -> aircraft in approach/landing phase
+            this.approachAndLand(); // continuously updates targetHeading to navigate plane towards runway
         }
 
-        super.move();
+        super.move(); // call parent move method to update currentHeading & plane position
     }
 }

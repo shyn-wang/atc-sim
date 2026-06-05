@@ -19,24 +19,28 @@ public class Plane {
     private double targetHeading;
 
     private double speed;
-    private double turnRate = 0.2; // turn rate per frame
+    private double turnRate; // turn rate per frame
 
     private Node sprite;
-    private double minScale = 0.7;
-    private double scaleFactor = 1;
+    private double minScale;
+    private double scaleFactor;
 
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: constructor for Plane objects
+    pre-condition: valid arguments
+    post-condition: initializes instance variables
     */
     public Plane(String state, double x, double y) {
         this.state = state;
         this.x = x;
         this.y = y;
 
-        speed = 0.35;
+        this.speed = 0.35;
+        this.turnRate = 0.2;
+
+        this.minScale = 0.7;
+        this.scaleFactor = 1;
 
         // initialize headings to 0
         this.currentHeading = 0.0;
@@ -70,11 +74,6 @@ public class Plane {
         this.currentHeading = currentHeading;
     }
 
-
-    public double getTargetHeading() {
-        return targetHeading;
-    }
-
     public void setTargetHeading(double targetHeading) {
         this.targetHeading = targetHeading;
     }
@@ -97,6 +96,7 @@ public class Plane {
         this.sprite = sprite;
     }
 
+
     public double getTurnRate() {
         return turnRate;
     }
@@ -104,6 +104,7 @@ public class Plane {
     public void setTurnRate(double turnRate) {
         this.turnRate = turnRate;
     }
+
 
     public double getSpeed() {
         return speed;
@@ -113,6 +114,7 @@ public class Plane {
         this.speed = speed;
     }
 
+
     public double getScaleFactor() {
         return scaleFactor;
     }
@@ -120,6 +122,7 @@ public class Plane {
     public void setScaleFactor(double scaleFactor) {
         this.scaleFactor = scaleFactor;
     }
+
 
     public double getMinScale() {
         return minScale;
@@ -131,6 +134,11 @@ public class Plane {
 
     // logic methods
 
+    /*
+    description: manages aircraft movement
+    pre-condition: none
+    post-condition: corrects currentHeading towards targetHeading & updates aircraft x,y position based on component vectors of velocity
+    */
     public void move() {
         if (this.currentHeading != this.targetHeading) { // gradually turn plane towards target direction
             // find smallest angle between current heading & target heading (which direction to turn in) -> normalization

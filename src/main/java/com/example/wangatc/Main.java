@@ -35,9 +35,9 @@ public class Main extends Application {
 
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: entry point of javafx gui
+    pre-condition: none
+    post-condition: configures stage, creates ui components
     */
     @Override
     public void start(Stage stage) {
@@ -80,9 +80,9 @@ public class Main extends Application {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: renders main menu gui
+    pre-condition: none
+    post-condition: displays main menu
     */
     private void showMainMenu() {
         VBox mainMenu = new VBox(500); // 500px spacing between elements/groups in mainmenu vbox
@@ -123,9 +123,9 @@ public class Main extends Application {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: renders high scores screen
+    pre-condition: none
+    post-condition: displays top 10 scores saved in scores.txt
     */
     private void showScoreScreen() {
         VBox scoreList = new VBox(100);
@@ -191,9 +191,9 @@ public class Main extends Application {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: renders game screen & runs game loop
+    pre-condition: none
+    post-condition: creates new game object & game loop
     */
     private void startGame() {
         Pane gameScreen = new Pane(); // create pane for game contents
@@ -218,9 +218,9 @@ public class Main extends Application {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: renders game over screen
+    pre-condition: finalScore is a valid int, reasonForLoss is a valid String
+    post-condition: freezes game loop, sort & save high scores to scores.txt
     */
     private void showGameOver(int finalScore, String reasonForLoss) {
         gameLoop.stop(); // freeze game screen as is in background
@@ -262,16 +262,16 @@ public class Main extends Application {
 
         gameOverMenu.getChildren().addAll(textGroup, buttonGroup);
 
-        // add the game over screen on top of the frozen game state
+        // add the game over screen ON TOP of the frozen game state
         scaledContainer.getChildren().add(gameOverMenu);
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: starting point of program
+    pre-condition: none
+    post-condition: none
     */
     public static void main(String[] args) {
-        launch(args);
+        launch(args); // start javafx runtime
     }
 }

@@ -14,7 +14,6 @@ import javafx.scene.paint.Color;
 
 public class DepartingPlane extends Plane {
     private Waypoint destination;
-    private String color;
 
     private Runway takeoffRunway;
 
@@ -24,18 +23,16 @@ public class DepartingPlane extends Plane {
 
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: constructor for DepartingPlane objects
+    pre-condition: color is a valid int
+    post-condition: initializes instance variables
     */
     public DepartingPlane(int color) {
-        super("ground", 0, 0);
+        super("ground", 0, 0); // initialize inherited properties
 
-        this.setSpeed(0.25);
+        this.setSpeed(0.25); // slower speed for ground movement
 
         // create sprite
-        String[] possibleColors = {"blue", "green", "orange", "pink", "red", "yellow"};
-        this.color = possibleColors[color];
         this.setSprite(Util.getDepartingPlaneSprite(color));
 
         // initialize visual timer ring for backlogged planes
@@ -52,6 +49,7 @@ public class DepartingPlane extends Plane {
     }
 
     // getters & setters
+
     public Waypoint getDestination() {
         return destination;
     }
@@ -64,10 +62,11 @@ public class DepartingPlane extends Plane {
         this.takeoffRunway = takeoffRunway;
     }
 
+
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: updates timer indicator for backlogged aircraft
+    pre-condition: none
+    post-condition: updates backlogTimer & graphics
     */
     public boolean updateBacklogTimer() {
         this.backlogTimer++;
@@ -80,7 +79,7 @@ public class DepartingPlane extends Plane {
         this.timerVisual.setLength(360 * remainingRatio);
 
         // flash dark red when remaining time < 25%
-        if (remainingRatio < 0.25 && backlogTimer % 30 < 15) {
+        if (remainingRatio < 0.25 && backlogTimer % 30 < 15) { // alternate between dark red & red
             this.timerVisual.setStroke(Color.DARKRED);
         } else {
             this.timerVisual.setStroke(Color.RED);
@@ -91,9 +90,9 @@ public class DepartingPlane extends Plane {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: resets timer properties
+    pre-condition: none
+    post-condition: hides timer visual & sets time equal to 0
     */
     public void resetBacklogTimer() {
         this.backlogTimer = 0;
@@ -101,9 +100,9 @@ public class DepartingPlane extends Plane {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: manages aircraft take off phase
+    pre-condition: none
+    post-condition: updates aircraft x/y position, speed, and sprite size to simulate taking off
     */
     public void takeOff() {
         if (this.getState().equals("taking off")) {
@@ -129,9 +128,9 @@ public class DepartingPlane extends Plane {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: automatically vectors an aircraft towards its corresponding waypoint
+    pre-condition: none
+    post-condition: continuously updates targetHeading such that the aircraft points directly at its waypoint
     */
     public void navigateToWaypoint() {
         double targetX = this.destination.getX();
@@ -147,9 +146,9 @@ public class DepartingPlane extends Plane {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: overrides Plane move method
+    pre-condition: none
+    post-condition: updates aircraft heading & position
     */
     @Override
     public void move() {

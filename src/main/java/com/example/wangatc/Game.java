@@ -169,7 +169,6 @@ public class Game {
                     ((ArrivingPlane) selectedPlane).setTargetRunway(null); // no target runway initially
 
                     double snapRadius = 30.0;
-                    double[] planePos = {selectedPlane.getX(), selectedPlane.getY()};
 
                     // check distance to runway 01
                     double dist01 = Math.hypot(e.getX() - runway01.getStartX(), e.getY() - runway01.getStartY());
@@ -178,7 +177,7 @@ public class Game {
                         headingIndicator.setEndY(runway01.getStartY());
 
                         // check if landing is possible from current plane position
-                        if (runway01.isApproachAngleValid(planePos)) {
+                        if (runway01.isApproachAngleValid(selectedPlane)) {
                             ((ArrivingPlane) selectedPlane).setTargetRunway(runway01); // queue potential approach
                             headingIndicator.setStroke(Color.LIGHTGREEN);
 
@@ -194,7 +193,7 @@ public class Game {
                         headingIndicator.setEndY(runway02.getStartY());
 
                         // check if landing is possible from current plane position
-                        if (runway02.isApproachAngleValid(planePos)) {
+                        if (runway02.isApproachAngleValid(selectedPlane)) {
                             ((ArrivingPlane) selectedPlane).setTargetRunway(runway02);
                             headingIndicator.setStroke(Color.LIGHTGREEN);
 
