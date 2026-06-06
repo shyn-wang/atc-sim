@@ -79,7 +79,7 @@ public class Util { // use static variables & methods -> enables access in other
 
                 bw.newLine();
             }
-        } catch (IOException _) {
+        } catch (IOException e) {
 
         }
     }
@@ -101,7 +101,7 @@ public class Util { // use static variables & methods -> enables access in other
                 }
             }
 
-        } catch (Exception _) {
+        } catch (Exception e) {
 
         }
     }
