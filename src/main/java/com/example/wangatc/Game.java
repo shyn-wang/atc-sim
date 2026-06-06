@@ -51,13 +51,13 @@ public class Game {
     private int difficultyScaling = 3;
 
 
-    private Runnable onGameOverCallback;
+    private Runnable onGameOverCallback; // -> stores callback to method created in main class
 
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: constructor for Game objects
+    pre-condition: gameScreen is a valid Pane, onGameOverCallback is a valid Runnable
+    post-condition: initializes instance variables
     */
     public Game(Pane gameScreen, Runnable onGameOverCallback) {
         this.gameScreen = gameScreen;
@@ -107,7 +107,9 @@ public class Game {
         setupGlobalMouseHandlers();
     }
 
+
     // getters & setters
+
     public boolean isRunwayOccupied() {
         return runwayOccupied;
     }
@@ -120,10 +122,11 @@ public class Game {
         return reasonForLoss;
     }
 
+
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: manages global mouse drag and release events
+    pre-condition: none
+    post-condition: updates aircraft & game properties based on release points
     */
     private void setupGlobalMouseHandlers() {
         // global action listener for dragging mouse across screen
@@ -140,7 +143,7 @@ public class Game {
                 }
 
                 if (selectedPlane instanceof DepartingPlane) {
-                    if (selectedPlane.getState().equals("dragging from takeoff queue")) {
+                    if (selectedPlane.getState().equals("dragging from takeoff queue")) { // plane is being dragged from hotbar -> set to follow cursor
                         selectedPlane.setX(e.getX());
                         selectedPlane.setY(e.getY());
                         selectedPlane.getSprite().setTranslateX(e.getX());
@@ -165,13 +168,14 @@ public class Game {
                         }
                     }
 
-                } else if (selectedPlane instanceof ArrivingPlane) { // check if mouse is dragged to close to a runway -> attempt landing
+                } else if (selectedPlane instanceof ArrivingPlane) { // check if mouse is dragged to close to a runway -> attempt approach & landing
                     ((ArrivingPlane) selectedPlane).setTargetRunway(null); // no target runway initially
 
                     double snapRadius = 30.0;
 
                     // check distance to runway 01
                     double dist01 = Math.hypot(e.getX() - runway01.getStartX(), e.getY() - runway01.getStartY());
+
                     if (dist01 < snapRadius) { // snap endpoint of line to start point of runway
                         headingIndicator.setEndX(runway01.getStartX());
                         headingIndicator.setEndY(runway01.getStartY());
@@ -187,7 +191,9 @@ public class Game {
                     }
 
                     // check distance to runway 02
+
                     double dist02 = Math.hypot(e.getX() - runway02.getStartX(), e.getY() - runway02.getStartY());
+
                     if (dist02 < snapRadius) {
                         headingIndicator.setEndX(runway02.getStartX());
                         headingIndicator.setEndY(runway02.getStartY());
@@ -223,7 +229,7 @@ public class Game {
                     }
                 }
 
-                if (selectedPlane.getState().equals("airborne")) { // targeting angle given by cursor instead of runway/waypoint
+                if (selectedPlane.getState().equals("airborne")) { // state is still 'airborne' -> plane is targeting angle given by cursor instead of runway/waypoint
                     selectedPlane.setTurnRate(0.20); // reset to default (in case approach is cancelled)
 
                     // update targetHeading based on mouse position at point of release
@@ -231,22 +237,23 @@ public class Game {
                     // calculate angle between center of plane & mouse endpoint
                     double[] p1 = {selectedPlane.getX(), selectedPlane.getY()};
                     double[] p2 = {e.getX(), e.getY()};
+
                     double targetAngle = Util.getHeadingTo(p1, p2);
 
                     // set target heading to angle
                     selectedPlane.setTargetHeading(targetAngle);
                 }
 
-                selectedPlane = null;
+                selectedPlane = null; // reset selectedPlane on mouse release
                 headingIndicator.setVisible(false);
             }
         });
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: creates new arriving aircraft
+    pre-condition: none
+    post-condition: new arriving aircraft is spawned off-screen & initialized
     */
     public void createNewArrivingPlane() {
         ArrivingPlane plane = new ArrivingPlane();
@@ -269,32 +276,31 @@ public class Game {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: creates new departing aircraft
+    pre-condition: none
+    post-condition: new departing aircraft is spawned in hotbar & initialized
     */
     public void createNewDepartingPlane() {
         // create plane
-        int whichColor = (int) (Math.random() * (6)); // random 0-5
-
+        int whichColor = (int) (Math.random() * (6)); // choose color -> random 0-5
         DepartingPlane plane = new DepartingPlane(whichColor);
 
-        if (this.takeoffQueue.size() < this.maxTakeoffQueueSize) {
+        if (this.takeoffQueue.size() < this.maxTakeoffQueueSize) { // space available in primary slots
             this.takeoffQueue.add(plane);
         } else {
-            this.takeoffQueueBacklog.add(plane);
+            this.takeoffQueueBacklog.add(plane); // add to backlog
         }
 
-        Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue, takeoffQueueBacklog);
+        Util.updateTakeoffHotbarUI(takeoffQueueHotbar, maxTakeoffQueueSize, takeoffQueue, takeoffQueueBacklog); // re-render hotbar ui to display added plane (sprite is added to hotbar)
 
         // create corresponding waypoint
         Waypoint waypoint = new Waypoint(whichColor, waypoints);
 
         plane.setDestination(waypoint);
-        this.gameScreen.getChildren().add(waypoint.getSprite()); // add to scene
+        this.gameScreen.getChildren().add(waypoint.getSprite()); // add waypoint to scene
 
 
-        // mouse listener for clicking departing planes
+        // unique mouse listener for clicking departing planes
         plane.getSprite().setOnMousePressed(e -> {
             // in takeoff queue -> pick up from hotbar
             if (takeoffQueue.contains(plane)) {
@@ -348,7 +354,7 @@ public class Game {
                     target = runway02;
                 }
 
-                // if dropped on a valid runway and the runway isn't currently occupied
+                // if dropped on a valid runway and the runway is not currently occupied
                 if (target != null && !isRunwayOccupied()) {
                     plane.setTakeoffRunway(target);
 
@@ -370,7 +376,7 @@ public class Game {
                     // update takeoff queue
                     takeoffQueue.remove(plane);
 
-                    if (!takeoffQueueBacklog.isEmpty()) {
+                    if (!takeoffQueueBacklog.isEmpty()) { // move any backlogged planes into main queue once slot is available
                         DepartingPlane promotedPlane = takeoffQueueBacklog.remove(0);
                         promotedPlane.resetBacklogTimer(); // hide & stop timer for planes out of the backlog
 
@@ -391,30 +397,31 @@ public class Game {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: manages spawn timing for all departing & arriving aircraft -> spawn rate is incrementally increased as game progresses
+    pre-condition: none
+    post-condition: creates new departing & arriving aircraft
     */
     public void spawnNewAircraft() {
         framesSinceLastSpawn++;
 
-        // When enough frames have passed, spawn a new plane
+        // when enough frames have passed, spawn a new plane
         if (framesSinceLastSpawn >= currentSpawnInterval) {
-            framesSinceLastSpawn = 0; // Reset timer
+            framesSinceLastSpawn = 0; // reset timer
 
             int arrivingOrDeparting = (int) (Math.random() * (2 - 1 + 1)) + 1; // random 1-2 -> 50% chance for departing or arriving plane
 
+            // approx balance # of arriving & departing planes spawned to prevent large discrepancies
             if (score.intValue() < 25) {
-                if (arrivingPlanes.size() - (takeoffQueue.size() + departingPlanes.size()) >= 2) {
+                if (arrivingPlanes.size() - (takeoffQueue.size() + departingPlanes.size()) >= 2) { // max discrepancy of 2 allowed when score < 25
                     arrivingOrDeparting = 2; // try spawning departing plane
 
                 } else if ((takeoffQueue.size() + departingPlanes.size()) - arrivingPlanes.size() >= 2) {
-                    arrivingOrDeparting = 1; // try spawning arriving plane
+                    arrivingOrDeparting = 1; // spawning arriving plane
                 }
 
             } else { // >= 25
-                if (arrivingPlanes.size() - (takeoffQueue.size() + departingPlanes.size()) >= 3) {
-                    arrivingOrDeparting = 2; // spawn departing plane
+                if (arrivingPlanes.size() - (takeoffQueue.size() + departingPlanes.size()) >= 3) { // max discrepancy of 3 allowed when score > 25
+                    arrivingOrDeparting = 2; // try spawn departing plane
 
                 } else if ((takeoffQueue.size() + departingPlanes.size()) - arrivingPlanes.size() >= 3) {
                     arrivingOrDeparting = 1; // spawn arriving plane
@@ -439,15 +446,15 @@ public class Game {
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: checks if game over conditions are satisfied
+    pre-condition: none
+    post-condition: returns true or false
     */
     public boolean checkGameOver() {
-        double boundary = 30.0;
-        double baseRadius = 20.0;
+        double boundary = 30.0; // boundary outside of screen edges
+        double baseRadius = 20.0; // base radius for dynamic sprite hitbox comparisons
 
-        for (int i = 0; i < allActivePlanes.size(); i++) {
+        for (int i = 0; i < allActivePlanes.size(); i++) { // loop through all active planes
             Plane p1 = allActivePlanes.get(i);
 
             // 1. check for out of bounds aircraft
@@ -455,7 +462,7 @@ public class Game {
             double vx = Math.cos(radians);
             double vy = Math.sin(radians);
 
-            // plane is lost if it is beyond a boundary AND its velocity is carrying it further away (just spawned arriving planes will not trigger game over)
+            // plane is lost if it is beyond a boundary AND its velocity is carrying it further away (newly spawned arriving planes will not trigger game over)
             boolean lostLeft   = (p1.getX() < -boundary) && (vx < 0);
             boolean lostRight  = (p1.getX() > Util.screenWidth + boundary) && (vx > 0);
             boolean lostTop    = (p1.getY() < -boundary) && (vy < 0);
@@ -467,7 +474,7 @@ public class Game {
             }
 
             // 2. check for collisions between aircraft
-            for (int j = i + 1; j < allActivePlanes.size(); j++) {
+            for (int j = i + 1; j < allActivePlanes.size(); j++) { // loop through all aircraft after the first
                 Plane p2 = allActivePlanes.get(j);
 
                 double p1Scale = p1.getSprite().getScaleX();
@@ -480,7 +487,7 @@ public class Game {
 
                 // implement dynamic hitbox size based on scale
                 double dynamicThreshold = (baseRadius * p1Scale) + (baseRadius * p2Scale);
-                double distance = Math.hypot(p1.getX() - p2.getX(), p1.getY() - p2.getY());
+                double distance = Math.hypot(p1.getX() - p2.getX(), p1.getY() - p2.getY()); // check distance between aircraft
 
                 if (distance < dynamicThreshold) { // collision
                     boolean p1OnRunway = p1.getState().equals("landing") || p1.getState().equals("taking off");
@@ -496,17 +503,17 @@ public class Game {
             }
 
         }
+
         return false;
     }
 
     /*
-    description:
-    pre-condition:
-    post-condition:
+    description: manages all planes in game -> handles spawning, movement, deletion, and game over detection
+    pre-condition: none
+    post-condition: updates game & aircraft properties
     */
     public void manageAllPlanes() {
         spawnNewAircraft();
-
 
         ArrayList<Plane> planesToRemove = new ArrayList<>();
 
@@ -527,7 +534,7 @@ public class Game {
 
             if (plane instanceof ArrivingPlane) {
                 if (plane.getState().equals("landed")) {
-                    planesToRemove.add(plane);
+                    planesToRemove.add(plane); // queue deletion
                 }
 
             } else if (plane instanceof DepartingPlane) {
@@ -537,12 +544,12 @@ public class Game {
             }
         }
 
-        if (checkGameOver()) {
-            onGameOverCallback.run();
-            return;
+        if (checkGameOver()) { // continuously monitor game over condition
+            onGameOverCallback.run(); // callback renders game over screen in main class
+            return; // break out of loop once game is over
         }
 
-        // manage timer visuals & game over via backlog overflow
+        // manage timer visuals & check for game over via backlog overflow
         for (DepartingPlane backlogPlane : takeoffQueueBacklog) {
             boolean timeUp = backlogPlane.updateBacklogTimer(); // only update timer for planes in backlog queue
 
@@ -562,16 +569,15 @@ public class Game {
 
             if (plane instanceof ArrivingPlane) { // plane has landed
                 arrivingPlanes.remove(plane);
-                score.set(score.get() + 1);
 
             } else if (plane instanceof DepartingPlane) { // plane has reached waypoint
                 departingPlanes.remove(plane);
 
                 waypoints.remove(((DepartingPlane) plane).getDestination());
                 gameScreen.getChildren().remove(((DepartingPlane) plane).getDestination().getSprite());
-
-                score.set(score.get() + 1);
             }
+
+            score.set(score.get() + 1);
 
             gameScreen.getChildren().remove(plane.getSprite());
         }

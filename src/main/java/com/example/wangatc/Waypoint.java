@@ -21,6 +21,11 @@ public class Waypoint {
 
     private Circle sprite;
 
+    /*
+    description: constructor for Waypoint objects
+    pre-condition: valid arguments
+    post-condition: initializes instance variables
+    */
     public Waypoint(int color, ArrayList<Waypoint> existingWaypoints) {
         this.color = color;
         this.existingWaypoints = existingWaypoints;
@@ -38,6 +43,10 @@ public class Waypoint {
         this.sprite.setTranslateY(this.y);
     }
 
+
+    // getters & setters
+
+
     public void setColor(int color) {
         String[] colors = {
                 "#30ffff", // blue
@@ -48,7 +57,7 @@ public class Waypoint {
                 "#F6DE64" // yellow
         };
 
-        this.sprite.setFill(Color.web(colors[color]));
+        this.sprite.setFill(Color.web(colors[color])); // map int color onto corresponding hex code
     }
 
     public int getColor() {
@@ -75,7 +84,11 @@ public class Waypoint {
         return sprite;
     }
 
-
+    /*
+    description: determines if a waypoint is reachable within one turn given an aircraft's current position & heading
+    pre-condition: plane is a valid Plane
+    post-condition: returns true or false
+    */
     public boolean isReachable(Plane plane) {
         double wpX = this.getX();
         double wpY = this.getY();
@@ -108,7 +121,7 @@ public class Waypoint {
             centerY = plane.getY() - radius * Math.cos(radians);
         }
 
-        // check if waypoint is inside the turning circle radius -> plane is unable to reach waypoint if true
+        // check if waypoint is inside the turning circle radius -> plane is unable to reach waypoint in a single turn if true
         double distanceToCenter = Math.hypot(wpX - centerX, wpY - centerY);
 
         // waypoint is outside of the plane's turning radius when its distance to the center of the turning circle is greater than the radius

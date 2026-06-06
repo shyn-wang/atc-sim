@@ -74,6 +74,7 @@ public class Main extends Application {
 
         stage.setScene(scene);
         stage.setFullScreen(true);
+        stage.setFullScreenExitHint(""); // disable popup message for entering full screen
         stage.show();
 
         showMainMenu(); // initially render main menu

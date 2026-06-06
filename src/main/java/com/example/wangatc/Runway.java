@@ -27,7 +27,7 @@ public class Runway {
     private double localizerInterceptY;
 
     /*
-    description: constructor for Runway  objects
+    description: constructor for Runway objects
     pre-condition: valid arguments
     post-condition: initializes instance variables
     */

@@ -41,6 +41,11 @@ public class Util { // use static variables & methods -> enables access in other
 
     // FILE HANDLERS
 
+    /*
+    description: locally saves the 10 highest player scores to scores.txt in descending sorted order
+    pre-condition: highScores is a valid ArrayList<String[]>, finalScore is a valid int
+    post-condition: highScores & scores.txt are modified
+    */
     public static void saveData(ArrayList<String[]> highScores, int finalScore) {
         String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE); // get date
 
@@ -79,6 +84,11 @@ public class Util { // use static variables & methods -> enables access in other
         }
     }
 
+    /*
+    description: loads score information from scores.txt into highScores
+    pre-condition: highScores is a valid ArrayList<String[]>
+    post-condition: highScores is populated with saved scores
+    */
     public static void reloadData(ArrayList<String[]> highScores) {
         String line;
 
@@ -126,8 +136,8 @@ public class Util { // use static variables & methods -> enables access in other
     }
 
     /*
-    description: merge the elements of two arrays into one array in either ascending or descending order
-    pre-condition: input, left, and right are valid String[][] arrays; mergeAscend is defined
+    description: merge the elements of two arrays into one array in descending order
+    pre-condition: input, left, and right are valid String[][] arrays
     post-condition: modifies contents of input to be in descending order
     */
     private static void merge(String[][] input, String[][] left, String[][] right) {
@@ -169,6 +179,11 @@ public class Util { // use static variables & methods -> enables access in other
 
     // LOGIC METHODS
 
+    /*
+    description: calculates the angle between two points (heading from p1 to p2)
+    pre-condition: p1 & p2 are valid double[] arrays
+    post-condition: returns calculated heading in degrees
+    */
     public static double getHeadingTo(double[] p1, double[] p2) {
         double x1 = p1[0];
         double y1 = p1[1];
@@ -189,6 +204,11 @@ public class Util { // use static variables & methods -> enables access in other
         return heading;
     }
 
+    /*
+    description: generates random spawn coordinates off-screen for newly spawned arriving planes
+    pre-condition: none
+    post-condition: returns int[] array containing x,y coordinates, sets plane heading to point towards center of screen
+    */
     public static int[] generateRandomSpawnPoint() { // generate random spawn point for arriving aircraft beyond one of four screen edges
         int whichEdge = (int) (Math.random() * (4 - 1 + 1)) + 1; // random 1-4
         int spawnX = 0;
@@ -216,9 +236,14 @@ public class Util { // use static variables & methods -> enables access in other
         return new int[] {spawnX, spawnY};
     }
 
+    /*
+    description: generates random coordinate for waypoints
+    pre-condition: existingWaypoints is a valid ArrayList<Waypoint>, color is a valid int
+    post-condition: returns double[] array containing x,y coordinates
+    */
     public static double[] generateRandomWaypointLocation(ArrayList<Waypoint> existingWaypoints, int color) {
         // if a waypoint of a specific color already exists, spawn all waypoints of that color at the same location
-        for (Waypoint waypoint : existingWaypoints) {
+        for (Waypoint waypoint : existingWaypoints) { // -> linearly search through existingWaypoints for a matching color
             if (waypoint.getColor() == color) {
                 return new double[] {waypoint.getX(), waypoint.getY()};
             }
@@ -231,7 +256,9 @@ public class Util { // use static variables & methods -> enables access in other
 
         do {
             isValid = true;
-            x = 50 + Math.random() * (Util.screenWidth - 100); // 50 px margin on both sides
+
+            // generate random x,y pair
+            x = 50 + Math.random() * (Util.screenWidth - 100); // 50 px margin on all sides
             y = 50 + Math.random() * (Util.screenHeight - 100);
 
             // block point from being within exclusion square
@@ -248,11 +275,17 @@ public class Util { // use static variables & methods -> enables access in other
                     }
                 }
             }
+
         } while (!isValid);
 
         return new double[] {x, y};
     }
 
+    /*
+    description: checks if an x,y coordinate is within a square exclusion zone located at the center of the screen
+    pre-condition: x & y are valid doubles
+    post-condition: returns boolean true or false
+    */
     private static boolean isInsideExclusionZone(double x, double y) {
         // find center of screen
         double centerX = Util.screenWidth / 2.0; // 960
@@ -274,10 +307,15 @@ public class Util { // use static variables & methods -> enables access in other
 
     // CREATE PLANE SPRITE METHODS
 
+    /*
+    description: creates the visual sprite for an arriving aircraft
+    pre-condition: none
+    post-condition: returns sprite as a Node
+    */
     public static Node getArrivingPlaneSprite() {
         ImageView imageNode = new ImageView(arrivingPlaneImage); // wrap in ImageView -> enables javafx to render
 
-        imageNode.setFitWidth(64);
+        imageNode.setFitWidth(64); // set size
         imageNode.setFitHeight(64);
         imageNode.setPreserveRatio(true);
 
@@ -292,11 +330,16 @@ public class Util { // use static variables & methods -> enables access in other
         // combine into group container
         Group sprite = new Group(imageNode, clickTarget);
 
-        return sprite;
+        return sprite; // Group is a child of Node -> can be returned as a Node
     }
 
+    /*
+    description: creates the visual sprite for a departing aircraft
+    pre-condition: color is a valid int
+    post-condition: returns sprite as a Node
+    */
     public static Node getDepartingPlaneSprite(int color) {
-        Image[] departingPlaneOptions = {
+        Image[] departingPlaneOptions = { // possible colors
                 departingPlaneImageBlue,
                 departingPlaneImageGreen,
                 departingPlaneImageOrange,
@@ -305,7 +348,7 @@ public class Util { // use static variables & methods -> enables access in other
                 departingPlaneImageYellow
         };
 
-        ImageView imageNode = new ImageView(departingPlaneOptions[color]);
+        ImageView imageNode = new ImageView(departingPlaneOptions[color]); // map int color onto color options to determine corresponding color
 
         imageNode.setFitWidth(50);
         imageNode.setFitHeight(50);
@@ -319,10 +362,10 @@ public class Util { // use static variables & methods -> enables access in other
         Circle clickTarget = new Circle(0, 0, 30);
         clickTarget.setFill(Color.color(0, 0, 0, 0.01)); // use 0.01 opacity -> completely transparent cannot register clicks
 
-        // combine into group container
+        // combine into Pane
         Pane sprite = new Pane(imageNode, clickTarget);
 
-        sprite.setPrefSize(0, 0); // force 0x0 size -> center aircraft in slots
+        sprite.setPrefSize(0, 0); // force 0x0 size -> center aircraft in hotbar slots
         sprite.setMinSize(0, 0);
         sprite.setMaxSize(0, 0);
 
@@ -332,6 +375,11 @@ public class Util { // use static variables & methods -> enables access in other
 
     // UI METHODS
 
+    /*
+    description: initializes line used for indicating heading
+    pre-condition: none
+    post-condition: returns Line headingIndicator
+    */
     public static Line initializeHeadingIndicator() {
         Line headingIndicator = new Line();
         headingIndicator.setStroke(Color.WHITE);
@@ -342,6 +390,11 @@ public class Util { // use static variables & methods -> enables access in other
         return headingIndicator;
     }
 
+    /*
+    description: initializes hotbar used to store queued departing aircraft
+    pre-condition: none
+    post-condition: returns HBox takeoffQueueHotbar
+    */
     public static HBox initializeHotbar() {
         HBox takeoffQueueHotbar = new HBox(15); // 15 px horizontal spacing between slots
 
@@ -357,6 +410,11 @@ public class Util { // use static variables & methods -> enables access in other
         return takeoffQueueHotbar;
     }
 
+    /*
+    description: populates hotbar with queued & backlogged aircraft
+    pre-condition: valid arguments
+    post-condition: updates hotbar slots
+    */
     public static void updateTakeoffHotbarUI(HBox takeoffQueueHotbar, int maxTakeoffQueueSize, ArrayList<DepartingPlane> takeoffQueue, ArrayList<DepartingPlane> takeoffQueueBacklog) {
         takeoffQueueHotbar.getChildren().clear(); // clear existing slots
 
