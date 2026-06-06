@@ -53,10 +53,10 @@ public class Util { // use static variables & methods -> enables access in other
             highScores.add(new String[] {date, String.valueOf(finalScore)}); // add all new scores if list is not full (less than 10 recorded scores)
 
         } else { // list is full -> only add new top scores
-            int minScore = Integer.parseInt(highScores.getLast()[1]); // check last score for min score (sorted)
+            int minScore = Integer.parseInt(highScores.get(highScores.size() - 1)[1]); // check last score for min score (sorted)
 
             if (finalScore >= minScore) {
-                highScores.remove(highScores.getLast());
+                highScores.remove(highScores.get(highScores.size() - 1));
                 highScores.add(new String[] {date, String.valueOf(finalScore)}); // replace min score with new score
             }
         }
